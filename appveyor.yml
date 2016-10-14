@@ -1,9 +1,5 @@
 version: '{build}'
-branches:
-  only:
-  - master
 configuration: Release
-platform: Any CPU
 before_build:
 - ps: >-
     $AssemblyFile = "$env:APPVEYOR_PROJECT_NAME\Properties\AssemblyInfo.cs"
@@ -13,31 +9,27 @@ before_build:
     $FileContent = Get-Content $AssemblyFile
 
     foreach($content in $FileContent) {
-      $match = [System.Text.RegularExpressions.Regex]::Match($content, $RegularExpression)
-      if($match.Success) {
-        $ver = $match.groups[1].value
-        break;
-      }
+     $match = [System.Text.RegularExpressions.Regex]::Match($content, $RegularExpression)
+     if($match.Success) {
+      $ver = $match.groups[1].value
+      break
+     }
     }
 
     Update-AppveyorBuild -Version ("{0}.{1}" -f $ver, $env:APPVEYOR_BUILD_NUMBER)
 build:
   verbosity: minimal
 after_build:
-- cmd: 7z a %APPVEYOR_PROJECT_NAME%-v%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\%APPVEYOR_PROJECT_NAME%\bin\Release\%APPVEYOR_PROJECT_NAME%.exe
+- cmd: 7z a %APPVEYOR_PROJECT_NAME%-v%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\%APPVEYOR_PROJECT_NAME%\bin\Release\%APPVEYOR_PROJECT_NAME%.exe*
 artifacts:
-- path: %APPVEYOR_PROJECT_NAME%*.zip
-  name: ProjectZip
+- path: $(appveyor_project_name)*.zip
+  name: AppZip
 deploy:
 - provider: GitHub
   tag: v$(appveyor_build_version)
   release: $(appveyor_project_name)-v$(appveyor_build_version)
-  description: Automatic rebuild
+  description: Automatic build by AppVeyor
   auth_token:
     secure: CePfctnBFd3iDwgVWlGOD6mfxQZrNBHK7IpsCK/deo2vHxA3lTr2nRnhbqpKqchQ
-  artifact: ProjectZip
+  artifact: AppZip
   draft: true
-  prerelease: false
-  force_update: true
-  on:
-    branch: master
