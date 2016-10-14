@@ -19,8 +19,10 @@ before_build:
     Update-AppveyorBuild -Version ("{0}.{1}" -f $ver, $env:APPVEYOR_BUILD_NUMBER)
 build:
   verbosity: minimal
+before_package:
+- cmd: copy %APPVEYOR_PROJECT_NAME%\bin\Release\%APPVEYOR_PROJECT_NAME%.exe*
 after_build:
-- cmd: 7z a %APPVEYOR_PROJECT_NAME%-v%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\%APPVEYOR_PROJECT_NAME%\bin\Release\%APPVEYOR_PROJECT_NAME%.exe*
+- cmd: 7z a %APPVEYOR_PROJECT_NAME%-v%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_PROJECT_NAME%.exe* README.md
 artifacts:
 - path: $(appveyor_project_name)*.zip
   name: AppZip

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //------------------------------------------------------------------------------
-// using CommandLine
+// using CommandLine v1.9, MIT
 // Copyright 2015-2013 Giacomo Stelluti Scala
 // https://github.com/gsscoder/commandline
 //------------------------------------------------------------------------------
@@ -23,7 +23,6 @@ using CommandLine;
 using Lib;
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Text;
 
 namespace ListXML
