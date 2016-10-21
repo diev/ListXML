@@ -273,22 +273,34 @@ namespace ListXML
         public static long ExtraSum = 0L;
         #endregion EPD
 
+
         /// <summary>
-        /// Читать хранилище исходных файлов
+        /// Предварительная проверка прав доступа
         /// </summary>
-        public static void ReadFiles()
+        public static void PreCheck()
         {
             TestRights(PathChk, "Ошибка тестового удаления в папке исходных файлов");
             TestRights(PathXML, "Ошибка тестовой записи в хранилище");
             TestRights(PathABS, "Ошибка тестовой записи в папку АБС");
+        }
 
-            //Забрать новые поступления из АРМ КБР
+        /// <summary>
+        /// Забрать новые поступления из АРМ КБР и разложить их в хранилище исходных файлов по датам
+        /// </summary>
+        public static void PreProcessChk()
+        {
             DirectoryInfo chkInfo = new DirectoryInfo(PathChk);
             foreach (FileInfo fi in chkInfo.GetFiles())
             {
                 MoveChkEDDated(fi);
             }
+        }
 
+        /// <summary>
+        /// Читать хранилище исходных файлов
+        /// </summary>
+        public static void ReadFiles()
+        {
             if (!Directory.Exists(PathRcv)) //Выходные? - не было поступлений...
             {
                 SetLastEDDate(); //или лучше выход из программы?
@@ -404,7 +416,7 @@ namespace ListXML
 
                 if (CashSum > 0L)
                 {
-                    sb.AppendFormat("{0,18} - приход наличными\n", BaseConvert.FromKopeek(CashSum));
+                    sb.AppendFormat("{0,18} - приход в кассовых документах\n", BaseConvert.FromKopeek(CashSum));
                 }
 
                 sb.AppendFormat("{0,18} - приход в поступивших {1} док.:\n\n", BaseConvert.FromKopeek(totalSum), totalNum);
@@ -819,18 +831,19 @@ namespace ListXML
 
                     case "ED222": //КБР: КЦОИ: Извещение о дебете/кредите для кассовых документов
                         #region ED222
-                        {
-                            XmlReader ed = navigator.ReadSubtree();
-                            ed.Read();
+                        //Money code moved to PacketEPD.Repack()
+                        //{
+                        //    XmlReader ed = navigator.ReadSubtree();
+                        //    ed.Read();
 
-                            //Признак дебета/кредита по отношению к лицевому счету кассы
-                            string cashDC = ed.GetAttribute("CashDC");
+                        //    //Признак дебета/кредита по отношению к лицевому счету кассы
+                        //    string cashDC = ed.GetAttribute("CashDC");
 
-                            //Общая сумма документа
-                            long sum = long.Parse(ed.GetAttribute("Sum"));
+                        //    //Общая сумма документа
+                        //    long sum = long.Parse(ed.GetAttribute("Sum"));
 
-                            CashSum += cashDC.Equals("1") ? sum : -sum;
-                        }
+                        //    CashSum += cashDC.Equals("1") ? sum : -sum;
+                        //}
                         break;
                         #endregion ED222
 

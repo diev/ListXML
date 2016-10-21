@@ -157,8 +157,31 @@ namespace ListXML
                     //items = int.Parse(navigator.GetAttribute("EDQuantity", null));
                     navigator.MoveToFirstChild(); //PacketEPD -> SigValue || ED1..
                 }
+                else if (node.Equals("PacketESID"))
+                {
+                    if (navigator.MoveToChild("ED222", navigator.NamespaceURI))
+                    {
+                        do
+                        {
+                            //КБР: КЦОИ: Извещение о дебете/кредите для кассовых документов
+                            XmlReader ed = navigator.ReadSubtree();
+                            ed.Read();
+
+                            //Признак дебета/кредита по отношению к лицевому счету кассы
+                            string cashDC = ed.GetAttribute("CashDC");
+
+                            //Общая сумма документа
+                            long sum = long.Parse(ed.GetAttribute("Sum"));
+
+                            EDStorage.CashSum += cashDC.Equals("1") ? sum : -sum;
+                        }
+                        while (navigator.MoveToNext("ED222", navigator.NamespaceURI));
+                    }
+                    continue;
+                }
                 else if (!node.StartsWith("ED1"))
                 {
+                    //Не платеж
                     continue;
                 }
                 #endregion every file

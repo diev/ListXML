@@ -77,6 +77,9 @@ namespace ListXML
             }
             #endregion TestMail
 
+            EDStorage.PreCheck();
+            EDStorage.PreProcessChk();
+
             #region Date
             if (Options.Date != null)
             {
@@ -93,7 +96,7 @@ namespace ListXML
             }
             else
             {
-                if (DateTime.Now.Hour < 11)
+                if (DateTime.Now.Hour < Options.Hour)
                 {
                     //Ищем предыдущий рабочий день
                     EDStorage.SetLastEDDate();

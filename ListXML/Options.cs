@@ -48,6 +48,12 @@ namespace ListXML
             HelpText = "Specify a date to process those files.")]
         public string Date { get; set; }
 
+        [Option('s', "switch", MetaValue = "HH", DefaultValue = 11,
+            HelpText = "Specify a hour to switch between previous and current days.")]
+        public int Hour { get; set; }
+
+        //[Option('h', "help",
+        //    HelpText = "Display this help screen.")]
         [HelpOption]
         public string GetUsage()
         {
