@@ -20,6 +20,7 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using System.Xml.XPath;
+using System.Xml.Xsl;
 
 namespace ListXML
 {
@@ -661,6 +662,7 @@ namespace ListXML
                 //Прочие пакеты
                 case "PacketEID": //КБР: КЦОИ: Пакет информационных ЭС
                 case "PacketESID": //КБР: КЦОИ: Пакет ЭСИС
+                case "PacketCash": //КБР: КЦОИ: Пакет ЭС для операции с наличными деньгами //2017.1
                     navigator.MoveToFirstChild(); //Packet -> SigValue || ED || InitialPacketED
                     break;
 
@@ -679,11 +681,7 @@ namespace ListXML
             do
             {
                 node = navigator.LocalName;
-                if (App.IsSet(node, out subscribers))
-                {
-                    Mailer.Send(subscribers, "Получен " + node, 
-                        "Вы подписаны на получение извещений из АРМ КБР.");
-                }
+                bool defaultMail = true;
 
                 switch (node)
                 {
@@ -740,6 +738,20 @@ namespace ListXML
                                     CreditSumFinal = true;
                                     Trace.TraceInformation("Окончательная выписка получена");
                                 }
+
+                                if (App.IsSet(node, out subscribers))
+                                {
+                                    string repFile = GetPathInFile("ED211-" + EDDate, ".txt");
+                                    XSLT2File(fi.FullName, repFile);
+
+                                    defaultMail = false;
+                                    Mailer.Send(subscribers,
+                                        string.Concat(
+                                            CreditSumFinal ? "Окончательная" : "Промежуточная",
+                                            " выписка за " + EDDate),
+                                        "Файл " + node + " за " + EDDate + " прилагается.",
+                                        File.Exists(repFile) ? repFile : null);
+                                }
                             }
                         }
                         break;
@@ -783,9 +795,10 @@ namespace ListXML
                                         }
                                         File.WriteAllText(repFile, report, Encoding.GetEncoding(1251));
 
+                                        defaultMail = false;
                                         Mailer.Send(subscribers,
                                             "Ведомость услуг ЦБ за " + repDate,
-                                            "Файл ED219 за один день " + repDate + " прилагается.",
+                                            "Файл " + node + " за один день " + repDate + " прилагается.",
                                             repFile);
                                         //File.Delete(repFile); //don't delete because this file is still sending!
                                     }
@@ -807,9 +820,10 @@ namespace ListXML
                                         }
                                         File.WriteAllText(repFile, report, Encoding.GetEncoding(1251));
 
+                                        defaultMail = false;
                                         Mailer.Send(subscribers,
                                             "Ведомость услуг ЦБ за " + repDate,
-                                            "Файл ED219 за весь месяц " + repDate + " прилагается.",
+                                            "Файл " + node + " за весь месяц " + repDate + " прилагается.",
                                             repFile);
                                         //File.Delete(repFile); //don't delete because this file is still sending!
                                     }
@@ -817,6 +831,7 @@ namespace ListXML
 
                                 default:
                                     Trace.TraceWarning("{0} содержит неизвестный ReportID {1} в ED219", fi.Name, node);
+                                    defaultMail = false;
                                     Mailer.Send(App.Email, "Получен неизвестный ReportID " + node,
                                         fi.FullName + " содержит неизвестный ReportID " + node + " в ED219.");
                                     break;
@@ -861,6 +876,12 @@ namespace ListXML
                     case "ED274": //КБР: КЦОИ: Уведомление о результатах приема к исполнению выставляемого на оплату инкассового поручения, выставляемого на оплату платежного требования
                     case "ED275": //КБР: КЦОИ: Запрос на отзыв выставленного на оплату платежного требования / инкассового поручения
                     case "ED276": //КБР: КЦОИ: Уведомление о результатах отзыва выставленного на оплату платежного требования / инкассового поручения
+
+                        //2017.1
+                    case "ED280": //КБР: КЦОИ: Извещение о получении ЭС
+                    case "ED283": //КБР: КЦОИ: Заявка на получение/сдачу наличных денег Банка России, заявка на выдачу/прием наличных денег Банка России в соответствии с предоставленным Банком России разрешением
+                    case "ED284": //КБР: КЦОИ: Разрешение на совершение операций с наличными деньгами Банка России
+                    case "ED285": //КБР: КЦОИ: Сообщение о проведенной операции с наличными деньгами Банка России
 
                     case "ED301": //КЦОИ: Распоряжение для управления ликвидностью
 
@@ -935,9 +956,16 @@ namespace ListXML
 
                     default:
                         Trace.TraceWarning("{0} содержит неизвестный {1}", fi.Name, node);
+                        defaultMail = false;
                         Mailer.Send(App.Email, "Получен неизвестный " + node,
                             fi.FullName + " содержит неизвестный документ " + node);
                         break;
+                }
+
+                if (App.IsSet(node, out subscribers) && defaultMail)
+                {
+                    Mailer.Send(subscribers, "Получен " + node,
+                        "Вы подписаны на получение извещений из АРМ КБР.");
                 }
             }
             while (navigator.MoveToNext());
@@ -968,25 +996,40 @@ namespace ListXML
         //    }
         //}
 
-        //private static void XSLT2File(string xmlFile, string txtFile)
-        //{
-        //    if (!File.Exists(m_XslTransform))
-        //    {
-        //        Console.WriteLine("No file for XSLTransform!");
-        //        return;
-        //    }
-        //    XPathDocument xpdoc = new XPathDocument(xmlFile);
-        //    XPathNavigator nav = xpdoc.CreateNavigator();
-        //    XslCompiledTransform xslt = new XslCompiledTransform();
-        //    xslt.Load(m_XslTransform);
-        //    StringWriter output = new StringWriter();
-        //    xslt.Transform(nav, null, output);
-        //    string outText = output.ToString();
-        //    if (outText.Length > 0)
-        //    {
-        //        //string txtFile = Path.Combine(outPath, outFile);
-        //        File.WriteAllText(txtFile, outText, Encoding.GetEncoding(1251));
-        //    }
-        //}
+        private static void XSLT2File(string xmlFile, string txtFile)
+        {
+            string xsltFile = Path.Combine(App.Dir, "UFEBS.xslt");
+
+            if (!File.Exists(xsltFile))
+            {
+                Trace.TraceWarning("No file " + xsltFile + " found for XSLTransform!");
+                return;
+            }
+
+            XPathDocument xpdoc = new XPathDocument(xmlFile);
+            XPathNavigator nav = xpdoc.CreateNavigator();
+
+            XsltSettings settings = new XsltSettings();
+            settings.EnableScript = true;
+
+            XsltArgumentList arguments = new XsltArgumentList();
+            arguments.AddParam("InfoBANK", string.Empty, App.Settings["Bank"]);
+            arguments.AddParam("InfoBIC", string.Empty, App.Settings["BIC"]);
+            arguments.AddParam("InfoRKC", string.Empty, App.Settings["RKC"]);
+
+            XslCompiledTransform xslt = new XslCompiledTransform();
+            xslt.Load(xsltFile, settings, null);
+
+            using (StringWriter output = new StringWriter())
+            {
+                xslt.Transform(nav, arguments, output);
+                string outText = output.ToString();
+
+                if (outText.Length > 0)
+                {
+                    File.WriteAllText(txtFile, outText, Encoding.GetEncoding(1251));
+                }
+            }
+        }
     }
 }
