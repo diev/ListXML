@@ -1,4 +1,4 @@
-# README
+# ListXML - Нарезка входящих из АРМ КБР
 
 [![Build status](https://ci.appveyor.com/api/projects/status/45j0q24sg6aiiq52?svg=true)](https://ci.appveyor.com/project/diev/listxml)
 
