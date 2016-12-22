@@ -24,6 +24,7 @@ using System.Net.Configuration;
 using System.Net.Mail;
 using System.Net.Mime;
 using System.Text;
+using System.Threading;
 
 namespace Lib
 {
@@ -179,7 +180,7 @@ namespace Lib
         /// <param name="files">Sets the attachment collection used to store data attached to this e-mail message separated by ','.</param>
         public static void Send(string to, string subj, string body = null, string files = null)
         {
-            if (!string.IsNullOrWhiteSpace(to))
+            if (!string.IsNullOrWhiteSpace(to) && to.Contains("@"))
             {
                 MailMessage email = new MailMessage();
 
@@ -274,11 +275,34 @@ namespace Lib
             {
                 Client.SendAsync(email, userState);
             }
-
-            catch (SmtpException)
+            catch (SmtpFailedRecipientsException ex)
+            {
+                for (int i = 0; i < ex.InnerExceptions.Length; i++)
+                {
+                    SmtpStatusCode status = ex.InnerExceptions[i].StatusCode;
+                    if (status == SmtpStatusCode.MailboxBusy ||
+                        status == SmtpStatusCode.MailboxUnavailable ||
+                        status == SmtpStatusCode.TransactionFailed)
+                    {
+                        Trace.TraceWarning("Проблема с доступностью - повтор через 5 секунд.");
+                        Thread.Sleep(5000);
+                        Client.SendAsync(email, userState);
+                    }
+                    else
+                    {
+                        Trace.TraceError("Отправка на {0} не состоялась: {1}",
+                            ex.InnerExceptions[i].FailedRecipient, ex.InnerExceptions[i].ToString());
+                    }
+                }
+            }
+            catch (SmtpException ex)
             {
                 Client.SendAsyncCancel();
-                Trace.TraceError("Отправка прервана по ошибке соединения с сервером.");
+                Trace.TraceError("Отправка прервана по ошибке соединения с сервером: " + ex.ToString());
+            }
+            finally
+            {
+                email.Dispose();
             }
 
             //// When autoEvent signals time is out, dispose of the timer.

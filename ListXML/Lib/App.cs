@@ -13,6 +13,8 @@
 // limitations under the License.
 //------------------------------------------------------------------------------
 
+//#define TEST
+
 using System;
 using System.Collections.Specialized;
 using System.Configuration;
@@ -56,30 +58,34 @@ namespace Lib
         /// <summary>
         /// Версия приложения
         /// </summary>
-        public static readonly Version Ver = assemblyName.Version;
+        public static readonly Version Ver = assemblyName.Version.Build > 60101
+            ? assemblyName.Version
+            : new Version(1, 0, 60101, 0);
         /// <summary>
         /// Дата версии приложения
         /// </summary>
+        // 1.0.0.0 (by default)
         // 1.0.2016.815 (yyyy.[M]Mdd, where Build = yyyy, Revision = Mdd)
         //public static readonly DateTime Dated = DateTime.Parse(string.Format("{0}-{1}-{2}", Ver.Build, Ver.Revision / 100, Ver.Revision % 100));
         // 1.0.60815.0 (yMMdd, where Build = yMMdd)
-        public static readonly DateTime Dated = DateTime.Parse(string.Format("201{0}-{1}-{2}", Ver.Build / 10000, Ver.Build % 10000 / 100, Ver.Build % 100));
+        public static readonly string SDated = string.Format("201{0}-{1}-{2}", Ver.Build / 10000, Ver.Build % 10000 / 100, Ver.Build % 100);
+        public static readonly DateTime Dated = DateTime.Parse(SDated);
         /// <summary>
         /// Строка с версией и датой версии приложения
         /// </summary>
         public static readonly string Version = string.Format("{0} v{1}", Name, Ver); // Ver.ToString(2), Ver.Build, Ver.Revision
 
         //public static readonly string attribute = (attribute == null) ? string.Empty : attribute;
-        static AssemblyDescriptionAttribute descriptionAttribute = AssemblyDescriptionAttribute.GetCustomAttribute(assembly, typeof(AssemblyDescriptionAttribute)) as AssemblyDescriptionAttribute;
+        static AssemblyDescriptionAttribute descriptionAttribute = Attribute.GetCustomAttribute(assembly, typeof(AssemblyDescriptionAttribute)) as AssemblyDescriptionAttribute;
         public static readonly string Description = descriptionAttribute.Description;
 
-        static AssemblyCompanyAttribute companyAttribute = AssemblyCompanyAttribute.GetCustomAttribute(assembly, typeof(AssemblyCompanyAttribute)) as AssemblyCompanyAttribute;
+        static AssemblyCompanyAttribute companyAttribute = Attribute.GetCustomAttribute(assembly, typeof(AssemblyCompanyAttribute)) as AssemblyCompanyAttribute;
         /// <summary>
         /// Компания разработчика приложения
         /// </summary>
         public static readonly string Company = companyAttribute.Company;
 
-        static AssemblyCopyrightAttribute copyrightAttribute = AssemblyCopyrightAttribute.GetCustomAttribute(assembly, typeof(AssemblyCopyrightAttribute)) as AssemblyCopyrightAttribute;
+        static AssemblyCopyrightAttribute copyrightAttribute = Attribute.GetCustomAttribute(assembly, typeof(AssemblyCopyrightAttribute)) as AssemblyCopyrightAttribute;
         /// <summary>
         /// Авторские права на приложение
         /// </summary>
@@ -106,18 +112,26 @@ namespace Lib
         public static NameValueCollection Settings = ConfigurationManager.AppSettings;
         public static ConnectionStringSettingsCollection Connections = ConfigurationManager.ConnectionStrings;
 
-        public static readonly string Log = Environment.ExpandEnvironmentVariables(string.Format(Settings["Log"], DateTime.Now, Name));
+        public static readonly string Log = Environment.ExpandEnvironmentVariables(string.Format(Settings["Log"] ?? "{0:yyyyMMdd}_{1}.log", DateTime.Now, Name));
         public static readonly string Email = Settings["Email"];
 
         public static bool IsSet(string key, out string value)
         {
+            #if TEST
+            NameValueCollection Settings = new NameValueCollection();
+            Settings.Add("Email", "admin@bank.ru");
+            Settings.Add("ED243", "    ");
+            Settings.Add("ED273", "");
+            //Settings.Add("ED999", null);
+            #endif
+
             value = Settings[key];
-            return !string.IsNullOrEmpty(value);
+            return !string.IsNullOrWhiteSpace(value);
         }
 
-        #endregion Config
+#endregion Config
 
-        #region Paths
+#region Paths
         /// <summary>
         /// Checks if a directory exists. If not, tries to create.
         /// </summary>
@@ -155,9 +169,9 @@ namespace Lib
             }
             return dir;
         }
-        #endregion Paths
+#endregion Paths
 
-        #region Exit
+#region Exit
         /// <summary>
         /// Завершить приложение с указанными кодом [0] и информационным сообщением
         /// </summary>
@@ -216,6 +230,6 @@ namespace Lib
             }
             return sb.ToString();
         }
-        #endregion Exit
+#endregion Exit
     }
 }
