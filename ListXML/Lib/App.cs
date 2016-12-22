@@ -13,8 +13,6 @@
 // limitations under the License.
 //------------------------------------------------------------------------------
 
-//#define TEST
-
 using System;
 using System.Collections.Specialized;
 using System.Configuration;
@@ -117,14 +115,6 @@ namespace Lib
 
         public static bool IsSet(string key, out string value)
         {
-            #if TEST
-            NameValueCollection Settings = new NameValueCollection();
-            Settings.Add("Email", "admin@bank.ru");
-            Settings.Add("ED243", "    ");
-            Settings.Add("ED273", "");
-            //Settings.Add("ED999", null);
-            #endif
-
             value = Settings[key];
             return !string.IsNullOrWhiteSpace(value);
         }
