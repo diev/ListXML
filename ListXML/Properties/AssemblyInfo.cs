@@ -1,4 +1,5 @@
-﻿//------------------------------------------------------------------------------
+﻿#region License
+//------------------------------------------------------------------------------
 // Copyright (c) Dmitrii Evdokimov
 // Source https://github.com/diev/
 // 
@@ -12,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //------------------------------------------------------------------------------
+#endregion
 
 using System.Reflection;
 using System.Resources;
@@ -47,7 +49,7 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("6.1.61222.0")]
-[assembly: AssemblyFileVersion("6.1.61222.0")]
+[assembly: AssemblyVersion("6.2.61228.0")]
+[assembly: AssemblyFileVersion("6.2.61228.0")]
 [assembly: NeutralResourcesLanguage("ru-RU")]
 

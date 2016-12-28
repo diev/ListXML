@@ -1,4 +1,5 @@
-﻿//------------------------------------------------------------------------------
+﻿#region License
+//------------------------------------------------------------------------------
 // Copyright (c) Dmitrii Evdokimov
 // Source https://github.com/diev/
 // 
@@ -12,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //------------------------------------------------------------------------------
+#endregion
 
 using Lib;
 using System;
@@ -29,6 +31,18 @@ namespace ListXML
     /// </summary>
     public static class EDStorage
     {
+        static EDStorage()
+        {
+            PathChk = Settings.PathChk;
+            Trace.TraceInformation("Путь к исходным файлам: \"{0}\"", PathChk);
+
+            PathXML = Settings.PathXML;
+            Trace.TraceInformation("Путь к хранилищу обрабатываемых файлов: \"{0}\"", PathXML);
+
+            PathABS = Settings.PathABS;
+            Trace.TraceInformation("Путь к накопителю для загрузки в АБС: \"{0}\"", PathABS);
+        }
+
         #region Date
         /// <summary>
         /// Текущая дата обработки в формате DateTime
@@ -63,30 +77,23 @@ namespace ListXML
         }
 
         /// <summary>
-        /// Установить текущий день для обработки
-        /// </summary>
-        public static void SetToday()
-        {
-            Date = DateTime.Now;
-        }
-
-        /// <summary>
         /// Найти предыдущий день обмена и установить его для обработки
         /// </summary>
-        public static void SetLastEDDate()
+        public static void SetLastEDDate(DateTime date)
         {
-            for (int i = 1; i < 20; i++)
+            for (int i = 1; i <= 20; i++)
             {
-                Date = DateTime.Now.AddDays(-i);
-                Trace.TraceInformation("Отступ на {0}", EDDate);
+                Date = date.AddDays(-i);
+                Trace.TraceInformation("Отступ на {0} ({1}).", EDDate, -i);
 
                 string path = Path.Combine(PathXML, "chk", EDDate);
                 if (Directory.Exists(path) && Directory.GetFiles(path).Length > 0)
                 {
+                    Trace.TraceInformation("Работа за день {0}.", EDDate);
                     return;
                 }
             }
-            App.ExitError("Нет исходных файлов.");
+            AppExit.Error("Нет исходных файлов.");
         }
         #endregion Date
 
@@ -94,17 +101,17 @@ namespace ListXML
         /// <summary>
         /// Путь к исходным файлам
         /// </summary>
-        public static readonly string PathChk = App.Settings["PathChk"];
+        public static string PathChk { get; }
 
         /// <summary>
         /// Путь к хранилищу обработанных файлов
         /// </summary>
-        public static readonly string PathXML = App.CheckDirectory(App.Settings["PathXML"]);
+        public static string PathXML { get; }
 
         /// <summary>
         /// Путь общего накопителя для загрузки в АБС
         /// </summary>
-        public static readonly string PathABS = App.CheckDirectory(App.Settings["PathABS"]);
+        public static string PathABS { get; }
 
         /// <summary>
         /// Путь к хранилищу читабельных копий файлов в формате XML
@@ -138,7 +145,7 @@ namespace ListXML
         /// <returns>Имя файла в папке хранилища</returns>
         public static FileInfo GetPathRcvFile(FileInfo fi, string eddate = null)
         {
-            string path = App.CheckDirectory(Path.Combine(PathXML, "chk", eddate ?? EDDate));
+            string path = IOChecks.CheckDirectory(Path.Combine(PathXML, "chk", eddate ?? EDDate));
             return new FileInfo(Path.Combine(path, fi.Name));
         }
 
@@ -150,7 +157,7 @@ namespace ListXML
         /// <returns>Имя файла в папке хранилища</returns>
         public static string GetPathInFile(string file, string ext = ".xml")
         {
-            string path = App.CheckDirectory(PathIn);
+            string path = IOChecks.CheckDirectory(PathIn);
             return Path.Combine(path, file + ext);
         }
 
@@ -172,7 +179,7 @@ namespace ListXML
         /// <returns>Имя файла в папке хранилища</returns>
         public static string GetPathSmevFile(string file)
         {
-            string path = App.CheckDirectory(Path.Combine(PathXML, "smev"));
+            string path = IOChecks.CheckDirectory(Path.Combine(PathXML, "smev"));
             return Path.Combine(path, file);
         }
 
@@ -183,7 +190,7 @@ namespace ListXML
         /// <returns>Имя файла в накопителе</returns>
         public static string GetPathABSFile(string file)
         {
-            string path = App.CheckDirectory(PathABS);
+            string path = IOChecks.CheckDirectory(PathABS);
             return Path.Combine(path, file);
         }
 
@@ -194,9 +201,10 @@ namespace ListXML
         /// <returns>Имя файла в накопителе</returns>
         public static string GetPathABSFile(int list)
         {
-            string path = App.CheckDirectory(Path.Combine(PathABS, string.Format("LIST{0}", list)));
-            string file = string.Format("List{0}-{1}.xml", list, EDDate.Substring(5));
-            return Path.Combine(path, file);
+            string format = Settings.FileABS;
+            string file = Path.Combine(PathABS, string.Format(format, list, EDDate.Substring(5)));
+            IOChecks.CheckFileDirectory(file);
+            return file;
         }
         #endregion GetPathFiles
 
@@ -280,9 +288,9 @@ namespace ListXML
         /// </summary>
         public static void PreCheck()
         {
-            TestRights(PathChk, "Ошибка тестового удаления в папке исходных файлов");
-            TestRights(PathXML, "Ошибка тестовой записи в хранилище");
-            TestRights(PathABS, "Ошибка тестовой записи в папку АБС");
+            IOChecks.TestRights(PathChk, "Ошибка тестового удаления в папке исходных файлов");
+            IOChecks.TestRights(PathXML, "Ошибка тестовой записи в хранилище");
+            IOChecks.TestRights(PathABS, "Ошибка тестовой записи в папку АБС");
         }
 
         /// <summary>
@@ -304,7 +312,7 @@ namespace ListXML
         {
             if (!Directory.Exists(PathRcv)) //Выходные? - не было поступлений...
             {
-                SetLastEDDate(); //или лучше выход из программы?
+                SetLastEDDate(DateTime.Now); //или лучше выход из программы?
             }
 
             //Обработка хранилища
@@ -348,28 +356,6 @@ namespace ListXML
 
                 PacketEPD.Repack(rcvInfo);
                 MergePaymentDocs();
-            }
-        }
-
-        /// <summary>
-        /// Проверяет наличие прав на запись в папке
-        /// </summary>
-        /// <param name="path">Путь к папке</param>
-        /// <param name="msg">Сообщение об ошибке</param>
-        private static void TestRights(string path, string msg)
-        {
-            const string test = "test.txt";
-            string file = Path.Combine(path, test);
-            try
-            {
-                App.CheckDirectory(path);
-                File.WriteAllText(file, test);
-                File.Delete(file);
-            }
-
-            catch (Exception ex)
-            {
-                App.ExitError(msg + ": " + ex.Message);
             }
         }
 
@@ -458,7 +444,7 @@ namespace ListXML
                 string msg = sb.ToString();
                 Trace.TraceInformation(msg);
 
-                Mailer.Send(App.Email, subj, msg);
+                Mailer.Send(Settings.Email, subj, msg);
             }
             #endregion Конец дня
         }
@@ -650,7 +636,7 @@ namespace ListXML
                 case "ED114": //КБР: КЦОИ: Выставляемое на оплату инкассовое поручение
                     if (!NewPayments)
                     {
-                        if (App.IsSet(node, out subscribers))
+                        if (Settings.IsSet(node, out subscribers))
                         {
                             Mailer.Send(subscribers, "Получен " + node, 
                                 "Вы подписаны на получение извещений из АРМ КБР.");
@@ -719,7 +705,7 @@ namespace ListXML
 
                             //Номер счета, по которому формируется ЭСИС
                             string ks = ed.GetAttribute("Acc");
-                            if (ks.Equals(App.Settings["KS"])) //наш корсчет
+                            if (ks.Equals(Settings.KS)) //наш корсчет
                             {
                                 //Общая сумма документов по кредиту счета участников (если больше нуля). Не заполняется для выписки, содержащей текущий остаток на счете
                                 string creditSum = ed.GetAttribute("CreditSum");
@@ -739,7 +725,7 @@ namespace ListXML
                                     Trace.TraceInformation("Окончательная выписка получена");
                                 }
 
-                                if (App.IsSet(node, out subscribers))
+                                if (Settings.IsSet(node, out subscribers))
                                 {
                                     string repFile = GetPathInFile("ED211-" + EDDate, ".txt");
                                     XSLT2File(fi.FullName, repFile);
@@ -780,7 +766,7 @@ namespace ListXML
                                     break;
 
                                 case "0401317": //daily costs
-                                    if (App.IsSet(reportID, out subscribers))
+                                    if (Settings.IsSet(reportID, out subscribers))
                                     {
                                         //Дата, за которую запрашивается информация
                                         string repDate = ed.GetAttribute("ReportDate");
@@ -805,7 +791,7 @@ namespace ListXML
                                     break;
 
                                 case "0401318": //monthly costs
-                                    if (App.IsSet(reportID, out subscribers))
+                                    if (Settings.IsSet(reportID, out subscribers))
                                     {
                                         //Дата, за которую запрашивается информация
                                         string repDate = ed.GetAttribute("ReportDate").Substring(0, 7);
@@ -832,7 +818,7 @@ namespace ListXML
                                 default:
                                     Trace.TraceWarning("{0} содержит неизвестный ReportID {1} в ED219", fi.Name, node);
                                     defaultMail = false;
-                                    Mailer.Send(App.Email, "Получен неизвестный ReportID " + node,
+                                    Mailer.Send(Settings.Email, "Получен неизвестный ReportID " + node,
                                         fi.FullName + " содержит неизвестный ReportID " + node + " в ED219.");
                                     break;
                             }
@@ -957,12 +943,12 @@ namespace ListXML
                     default:
                         Trace.TraceWarning("{0} содержит неизвестный {1}", fi.Name, node);
                         defaultMail = false;
-                        Mailer.Send(App.Email, "Получен неизвестный " + node,
+                        Mailer.Send(Settings.Email, "Получен неизвестный " + node,
                             fi.FullName + " содержит неизвестный документ " + node);
                         break;
                 }
 
-                if (App.IsSet(node, out subscribers) && defaultMail)
+                if (Settings.IsSet(node, out subscribers) && defaultMail)
                 {
                     Mailer.Send(subscribers, "Получен " + node,
                         "Вы подписаны на получение извещений из АРМ КБР.");
@@ -998,7 +984,7 @@ namespace ListXML
 
         private static void XSLT2File(string xmlFile, string txtFile)
         {
-            string xsltFile = Path.Combine(App.Dir, "UFEBS.xslt");
+            string xsltFile = Settings.XSLT;
 
             if (!File.Exists(xsltFile))
             {
@@ -1013,9 +999,9 @@ namespace ListXML
             settings.EnableScript = true;
 
             XsltArgumentList arguments = new XsltArgumentList();
-            arguments.AddParam("InfoBANK", string.Empty, App.Settings["Bank"]);
-            arguments.AddParam("InfoBIC", string.Empty, App.Settings["BIC"]);
-            arguments.AddParam("InfoRKC", string.Empty, App.Settings["RKC"]);
+            arguments.AddParam("InfoBANK", string.Empty, Settings.Bank);
+            arguments.AddParam("InfoBIC", string.Empty, Settings.BIC);
+            arguments.AddParam("InfoRKC", string.Empty, Settings.RKC);
 
             XslCompiledTransform xslt = new XslCompiledTransform();
             xslt.Load(xsltFile, settings, null);

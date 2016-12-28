@@ -110,14 +110,17 @@
     <Compile Include="Lib\BankLS.cs" />
     <Compile Include="Lib\BaseConvert.cs" />
     <Compile Include="EDStorage.cs" />
+    <Compile Include="Lib\AppExit.cs" />
     <Compile Include="Lib\Mailer.cs" />
     <Compile Include="Lib\Password.cs" />
+    <Compile Include="Lib\IOChecks.cs" />
     <Compile Include="Lib\Pinger.cs" />
     <Compile Include="Lib\WaitKey.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="PacketEPD.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Settings.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0">

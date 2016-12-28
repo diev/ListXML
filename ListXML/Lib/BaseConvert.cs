@@ -1,4 +1,5 @@
-﻿//------------------------------------------------------------------------------
+﻿#region License
+//------------------------------------------------------------------------------
 // Copyright (c) Dmitrii Evdokimov
 // Source https://github.com/diev/
 // 
@@ -12,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //------------------------------------------------------------------------------
+#endregion
 
 using System;
 using System.Text;

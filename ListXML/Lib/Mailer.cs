@@ -1,4 +1,5 @@
-﻿//------------------------------------------------------------------------------
+﻿#region License
+//------------------------------------------------------------------------------
 // Copyright (c) Dmitrii Evdokimov
 // Source https://github.com/diev/
 // 
@@ -12,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //------------------------------------------------------------------------------
+#endregion
 
 using System;
 using System.Collections.Concurrent;
@@ -36,6 +38,12 @@ namespace Lib
         static SmtpClient Client = null;
         static bool IsReady = true;
         static ConcurrentQueue<MailMessage> Queue = new ConcurrentQueue<MailMessage>();
+
+
+        /// <summary>
+        /// Email to send alerts.
+        /// </summary>
+        public static string Admin { get; set; }
 
         private static void Start()
         {
@@ -98,6 +106,7 @@ namespace Lib
                     Client.DeliveryMethod = SmtpDeliveryMethod.Network;
                     Client.EnableSsl = ssl;
                     // Client.Timeout = Timeout * 1000; // Ignored for Async
+                    Trace.TraceInformation("See emails through \"{0}\".", host);
                     break;
 
                 case SmtpDeliveryMethod.PickupDirectoryFromIis:
@@ -105,7 +114,11 @@ namespace Lib
 
                 case SmtpDeliveryMethod.SpecifiedPickupDirectory:
                     Client = new SmtpClient();
-                    App.CheckDirectory(Client.PickupDirectoryLocation);
+                    string path = Client.PickupDirectoryLocation;
+                    path = Environment.ExpandEnvironmentVariables(string.Format(path, DateTime.Now, App.Name));
+                    IOChecks.CheckDirectory(path);
+                    Client.PickupDirectoryLocation = path;
+                    Trace.TraceInformation("See emails in \"{0}\".", path);
                     break;
 
                 default:
@@ -137,10 +150,11 @@ namespace Lib
             }
         }
 
-        private static void DropQueue(int count = 0)
+        private static void DropQueue(int count = 0, bool isSent = false)
         {
             if (Queue.IsEmpty)
             {
+                Trace.TraceInformation("Queue is empty.");
                 return;
             }
 
@@ -149,6 +163,14 @@ namespace Lib
             if (count == 1)
             {
                 Queue.TryDequeue(out drop);
+                if (isSent)
+                {
+                    Trace.TraceInformation("[{0}] Dequeued sent.", drop.Subject);
+                }
+                else
+                {
+                    Trace.TraceWarning("[{0}] Dequeued unsent.", drop.Subject);
+                }
                 drop.Dispose();
                 return;
             }
@@ -156,18 +178,25 @@ namespace Lib
             while (!Queue.IsEmpty)
             {
                 Queue.TryDequeue(out drop);
-                Trace.TraceWarning("[{0}] Send dropped.", drop.Subject);
+                Trace.TraceWarning("[{0}] Dropped from queue.", drop.Subject);
                 drop.Dispose();
             }
         }
 
         /// <summary>
-        /// Sends an alert e-mail message to dedicated administrator. 
+        /// Sends an alert e-mail message to the Admin. 
         /// </summary>
         /// <param name="msg">Sets the error message to send.</param>
         public static void SendAlert(string msg)
         {
-            Send(App.Email, "Alert!", msg);
+            if (string.IsNullOrWhiteSpace(Admin))
+            {
+                Trace.TraceWarning("Admin email is not set!");
+            }
+            else
+            { 
+                Send(Admin, "Alert!", msg);
+            }
         }
 
         /// <summary>
@@ -219,11 +248,12 @@ namespace Lib
 
                     if (email.Attachments.Count == 0)
                     {
-                        Trace.TraceWarning("Attachments in " + files + " not found!");
+                        Trace.TraceWarning("Attachments in \"{0}\" not found!", files);
                     }
                 }
 
                 Queue.Enqueue(email);
+                Trace.TraceInformation("[{0}] Queued to send.", email.Subject);
             }
             Delivery();
         }
@@ -273,6 +303,7 @@ namespace Lib
 
             try
             {
+                Trace.TraceInformation("[{0}] Sending...", email.Subject);
                 Client.SendAsync(email, userState);
             }
             catch (SmtpFailedRecipientsException ex)
@@ -286,6 +317,7 @@ namespace Lib
                     {
                         Trace.TraceWarning("Проблема с доступностью - повтор через 5 секунд.");
                         Thread.Sleep(5000);
+                        Trace.TraceInformation("[{0}] Sending again...", email.Subject);
                         Client.SendAsync(email, userState);
                     }
                     else
@@ -300,10 +332,11 @@ namespace Lib
                 Client.SendAsyncCancel();
                 Trace.TraceError("Отправка прервана по ошибке соединения с сервером: " + ex.ToString());
             }
-            finally
-            {
-                email.Dispose();
-            }
+            //finally
+            //{
+            //    Trace.TraceInformation("[{0}] Disposing...", email.Subject);
+            //    email.Dispose(); // not in Async mode!
+            //}
 
             //// When autoEvent signals time is out, dispose of the timer.
             //autoEvent.WaitOne();
@@ -336,6 +369,7 @@ namespace Lib
                     break;
                 }
 
+                Trace.TraceInformation("Final delivery waiting...");
                 Delivery();
             }
 
@@ -355,16 +389,18 @@ namespace Lib
             if (e.Cancelled)
             {
                 Trace.TraceWarning("[{0}] Send canceled.", token);
+                DropQueue(1);
             }
             else if (e.Error != null)
             {
                 Trace.TraceWarning("[{0}] {1}", token, e.Error.ToString());
+                DropQueue(1);
             }
             else
             {
                 Trace.TraceInformation("[{0}] Message sent.", token);
+                DropQueue(1, true);
             }
-            DropQueue(1);
             IsReady = true;
 
             Delivery();

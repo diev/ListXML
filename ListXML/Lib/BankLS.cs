@@ -1,4 +1,5 @@
-﻿//------------------------------------------------------------------------------
+﻿#region License
+//------------------------------------------------------------------------------
 // Copyright (c) Dmitrii Evdokimov
 // Source https://github.com/diev/
 // 
@@ -12,13 +13,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //------------------------------------------------------------------------------
+#endregion
 
+using ListXML;
 using System;
 
 namespace Lib
 {
     public static class BankLS
     {
+        static BankLS()
+        {
+            string bic = Settings.BIC;
+            BIC3 = bic.Substring(bic.Length - 3);
+        }
+
         /// <summary>
         /// Последние 3 цифры БИК банка
         /// </summary>

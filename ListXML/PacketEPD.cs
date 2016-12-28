@@ -1,4 +1,5 @@
-﻿//------------------------------------------------------------------------------
+﻿#region License
+//------------------------------------------------------------------------------
 // Copyright (c) Dmitrii Evdokimov
 // Source https://github.com/diev/
 // 
@@ -12,10 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //------------------------------------------------------------------------------
+#endregion
 
 using Lib;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -79,13 +82,13 @@ namespace ListXML
 
             int n = EDStorage.CreditSumFinal ? 2 : -2;
             string B = BaseConvert.GetBase();
-            string C = App.Connections["Dump"].ConnectionString;
+            string C = ConfigurationManager.ConnectionStrings["Dump"].ConnectionString;
             string D = Encoding.UTF8.GetString(Convert.FromBase64String(C));
             int b = B.Length, d = D.Length, p = 0;
 
             string[] LS1 = { }, LS2 = { };
 
-            string list1 = App.Settings["List1"];
+            string list1 = Settings.List1;
             if (!string.IsNullOrEmpty(list1))
             {
                 if (list1[0] == '@')
@@ -105,7 +108,7 @@ namespace ListXML
                 p = BaseConvert.ListToArray(list1, out LS1);
             }
 
-            string list2 = App.Settings["List2"];
+            string list2 = Settings.List2;
             if (!string.IsNullOrEmpty(list2))
             {
                 if (list2[0] == '@')
@@ -263,8 +266,8 @@ namespace ListXML
 
                             #region 40817
                             //Поступление средств на счет физлица
-                            string subscribers = App.Settings["40817"];
-                            if (!string.IsNullOrEmpty(subscribers))
+                            string subscribers;
+                            if (Settings.IsSet("40817", out subscribers))
                             {
                                 if (acc.StartsWith("40817810") && acc.Substring(9, 5).Equals("00005"))
                                 {
@@ -367,10 +370,10 @@ namespace ListXML
                     writer.WriteAttributeString("EDDate", EDStorage.EDDate);
                     
                     //Уникальный идентификатор составителя ЭС - УИС
-                    writer.WriteAttributeString("EDAuthor", App.Settings["UICRKC"]);
+                    writer.WriteAttributeString("EDAuthor", Settings.UICRKC);
                     
                     //Уникальный идентификатор получателя ЭС. Может быть заполнен ТПК УОС
-                    writer.WriteAttributeString("EDReceiver", App.Settings["UICBank"]);
+                    writer.WriteAttributeString("EDReceiver", Settings.UICBank);
 
                     //Количество ЭПС в пакете (поле 153)
                     writer.WriteAttributeString("EDQuantity", EDStorage.Pack[list].Num.ToString());

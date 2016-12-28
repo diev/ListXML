@@ -1,4 +1,5 @@
-﻿//------------------------------------------------------------------------------
+﻿#region License
+//------------------------------------------------------------------------------
 // Copyright (c) Dmitrii Evdokimov
 // Source https://github.com/diev/
 // 
@@ -16,6 +17,7 @@
 // Copyright 2015-2013 Giacomo Stelluti Scala
 // https://github.com/gsscoder/commandline
 //------------------------------------------------------------------------------
+#endregion
 
 #define TRACE
 
@@ -33,7 +35,7 @@ namespace ListXML
 
         static void Main(string[] args)
         {
-            Trace.Listeners.Add(new AppTraceListener(App.Log));
+            Trace.Listeners.Add(new AppTraceListener(Settings.Log));
 
             #region Options
             Parser.Default.ParseArgumentsStrict(args, Options);
@@ -73,7 +75,7 @@ namespace ListXML
                 Console.WriteLine("Press Esc to exit");
                 Console.ReadKey();
 
-                App.ExitInformation("Тест почты завершен.");
+                AppExit.Information("Тест почты завершен.");
             }
             #endregion TestMail
 
@@ -86,26 +88,19 @@ namespace ListXML
                 DateTime date;
                 if (DateTime.TryParse(Options.Date, out date))
                 {
-                    EDStorage.Date = date;
+                    Trace.TraceInformation("Работа за день {0:yyyy-MM-dd}.", date);
+                    EDStorage.SetLastEDDate(date);
                 }
                 else
                 {
                     //throw new ArgumentException("Ошибка чтения даты.", "Options.Date");
-                    App.ExitError("Ошибка чтения даты из параметров.");
+                    AppExit.Error("Ошибка чтения даты из параметров.");
                 }
             }
-            else
+            else if (DateTime.Now.Hour < Options.Hour)
             {
-                if (DateTime.Now.Hour < Options.Hour)
-                {
-                    //Ищем предыдущий рабочий день
-                    EDStorage.SetLastEDDate();
-                }
-                else
-                {
-                    //Работа текущим днем 
-                    EDStorage.SetToday();
-                }
+                Trace.TraceInformation("Время работать предыдущим днем.");
+                EDStorage.SetLastEDDate(DateTime.Now);
             }
             #endregion Date
 
@@ -119,10 +114,6 @@ namespace ListXML
             #endregion Options
 
             #region Run
-            //Инициализация
-            string bic = App.Settings["BIC"];
-            BankLS.BIC3 = bic.Substring(bic.Length - 3);
-
             //Читаем файлы
             EDStorage.ReadFiles();
             #endregion Run
@@ -132,7 +123,7 @@ namespace ListXML
             Mailer.FinalDelivery(2);
 
             //Выход
-            App.Exit(); //App.ExitInformation("Программа завершена.");
+            AppExit.Information(); //"Программа завершена.");
             #endregion Finish
         }
     }

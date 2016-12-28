@@ -1,4 +1,5 @@
-﻿//------------------------------------------------------------------------------
+﻿#region License
+//------------------------------------------------------------------------------
 // Copyright (c) Dmitrii Evdokimov
 // Source https://github.com/diev/
 // 
@@ -16,11 +17,12 @@
 // Copyright 2015-2013 Giacomo Stelluti Scala
 // https://github.com/gsscoder/commandline
 //------------------------------------------------------------------------------
+#endregion
 
 using CommandLine;
 using CommandLine.Text;
 
-namespace ListXML
+namespace Lib
 {
     class Options
     {
