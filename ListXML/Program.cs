@@ -43,7 +43,7 @@ namespace ListXML
             #region Verbose
             if (Options.Verbose || AppTraceListener.TraceConsole.TraceVerbose)
             {
-                Trace.Listeners.Add((TraceListener)new AppTraceListener());
+                Trace.Listeners.Add(new AppTraceListener());
             }
             #endregion Verbose
 
@@ -62,6 +62,14 @@ namespace ListXML
             }
             Trace.TraceInformation(sb.ToString());
             #endregion Info
+
+            #region TestSettings
+            if (Options.Test)
+            {
+                Settings.Display();
+                Environment.Exit(0); //for AppVeyor
+            }
+            #endregion TestSettings
 
             #region TestMail
             if (Options.TestMail != null)
@@ -89,7 +97,7 @@ namespace ListXML
                 if (DateTime.TryParse(Options.Date, out date))
                 {
                     Trace.TraceInformation("Работа за день {0:yyyy-MM-dd}.", date);
-                    EDStorage.SetLastEDDate(date);
+                    EDStorage.Date = date;
                 }
                 else
                 {

@@ -34,6 +34,7 @@ namespace Lib
             //Name = Environment.GetCommandLineArgs()[0] + ".exe"
             Name = assemblyName.Name;
 
+            // Major.Minor.Build.Revision
             Ver = assemblyName.Version.Build > 60101
                 ? assemblyName.Version
                 : new Version(1, 0, 60101, 0);

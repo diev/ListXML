@@ -32,22 +32,11 @@ namespace Lib
 {
     public static class Mailer
     {
-        //const int Timeout = 5; // sec
-        const string FilesSeparator = ",;";
-
-        static SmtpClient Client = null;
-        static bool IsReady = true;
-        static ConcurrentQueue<MailMessage> Queue = new ConcurrentQueue<MailMessage>();
-
-
-        /// <summary>
-        /// Email to send alerts.
-        /// </summary>
-        public static string Admin { get; set; }
-
-        private static void Start()
+        static Mailer()
         {
-            Trace.TraceInformation("SMTP start...");
+            //Trace.TraceInformation("Mailer start...");
+
+            Signature = "Вы подписаны на получение извещений из АРМ КБР.";
 
             //http://stackoverflow.com/questions/454277/how-to-enable-ssl-for-smtpclient-in-web-config
             //http://www.codeproject.com/dotnet/mysteriesofconfiguration.asp
@@ -74,12 +63,13 @@ namespace Lib
                 throw new ArgumentNullException(section, "No this section in App.config");
             }
 
-            switch (mailSettings.Smtp.DeliveryMethod)
+            method = mailSettings.Smtp.DeliveryMethod;
+            switch (method)
             {
                 case SmtpDeliveryMethod.Network:
-                    SmtpNetworkElement smtpNetworkElement = mailSettings.Smtp.Network;
+                    SmtpNetworkElement settings = mailSettings.Smtp.Network;
 
-                    string host = smtpNetworkElement.Host;
+                    host = settings.Host;
                     if (string.IsNullOrEmpty(host))
                     {
                         throw new ArgumentNullException(host, "No smtp server Host or IP specified");
@@ -89,53 +79,94 @@ namespace Lib
                         throw new ArgumentException("Host not pinged", host);
                     }
 
-                    int port = smtpNetworkElement.Port;
+                    port = settings.Port;
 
                     // Specify whether the SmtpClient uses Secure Sockets Layer (SSL) to encrypt the connection.
                     //bool enableSsl = smtpNetworkElement.Port == 587 || //LiveHack due to a Miscrosoft bug prior to .Net 4 (no sense of "enableSsl=" in config)
                     //            smtpNetworkElement.Port == 465; // Port != 25
-                    bool ssl = smtpNetworkElement.EnableSsl; //Just if we use .Net 4 now
+                    ssl = settings.EnableSsl; //Just if we use .Net 4 now
 
-                    string user = smtpNetworkElement.UserName;
-                    string pass = Password.Decode(smtpNetworkElement.Password);
-
-                    Client = new SmtpClient(host, port);
-
-                    Client.UseDefaultCredentials = false;
-                    Client.Credentials = new NetworkCredential(user, pass);
-                    Client.DeliveryMethod = SmtpDeliveryMethod.Network;
-                    Client.EnableSsl = ssl;
-                    // Client.Timeout = Timeout * 1000; // Ignored for Async
-                    Trace.TraceInformation("See emails through \"{0}\".", host);
+                    user = settings.UserName;
+                    pass = Password.Decode(settings.Password);
                     break;
 
                 case SmtpDeliveryMethod.PickupDirectoryFromIis:
                     throw new NotImplementedException("Импорт настроек из IIS не предусмотрен.");
 
                 case SmtpDeliveryMethod.SpecifiedPickupDirectory:
-                    Client = new SmtpClient();
-                    string path = Client.PickupDirectoryLocation;
-                    path = Environment.ExpandEnvironmentVariables(string.Format(path, DateTime.Now, App.Name));
+                    SmtpSpecifiedPickupDirectoryElement pickup = mailSettings.Smtp.SpecifiedPickupDirectory;
+
+                    path = pickup.PickupDirectoryLocation;
+                    if (path.Contains("{"))
+                    {
+                        path = string.Format(path, DateTime.Now, App.Name);
+                    }
+                    if (path.Contains("%"))
+                    {
+                        path = Environment.ExpandEnvironmentVariables(path);
+                    }
                     IOChecks.CheckDirectory(path);
-                    Client.PickupDirectoryLocation = path;
-                    Trace.TraceInformation("See emails in \"{0}\".", path);
+                    //Trace.TraceInformation("See emails in \"{0}\".", path);
                     break;
 
                 default:
                     throw new NotImplementedException("Такой вид настроек отправки почты не предусмотрен.");
             }
+        }
+
+        //const int Timeout = 5; // sec
+        const string FilesSeparator = ",;";
+
+        static SmtpClient Client = null;
+        static SmtpDeliveryMethod method;
+
+        // SmtpDeliveryMethod.Network
+        static string host;
+        static int port;
+        static bool ssl;
+        static string user;
+        static string pass;
+
+        // SmtpDeliveryMethod.SpecifiedPickupDirectory
+        static string path;
+
+        static bool IsReady = true;
+        static ConcurrentQueue<MailMessage> Queue = new ConcurrentQueue<MailMessage>();
+
+        /// <summary>
+        /// Email to send alerts.
+        /// </summary>
+        public static string Admin { get; set; } = string.Empty;
+
+        /// <summary>
+        /// A constant text under your message body.
+        /// </summary>
+        public static string Signature { get; set; } = string.Empty;
+
+        private static void Start()
+        {
+            Trace.TraceInformation("SMTP start...");
+
+            switch (method)
+            {
+                case SmtpDeliveryMethod.Network:
+                    Client = new SmtpClient(host, port);
+                    Client.UseDefaultCredentials = false;
+                    Client.Credentials = new NetworkCredential(user, pass);
+                    Client.EnableSsl = ssl;
+                    // Client.Timeout = Timeout * 1000; // Ignored for Async
+                    break;
+
+                case SmtpDeliveryMethod.SpecifiedPickupDirectory:
+                    Client = new SmtpClient();
+                    Client.PickupDirectoryLocation = path;
+                    break;
+            }
 
             // Set the method that is called back when the send operation ends.
             Client.SendCompleted += new SendCompletedEventHandler(SendCompletedCallback);
+            Client.DeliveryMethod = method;
         }
-
-        //public static bool Done
-        //{
-        //    get
-        //    {
-        //        return (IsReady && Queue.IsEmpty);
-        //    }
-        //}
 
         private static void Stop()
         {
@@ -154,7 +185,7 @@ namespace Lib
         {
             if (Queue.IsEmpty)
             {
-                Trace.TraceInformation("Queue is empty.");
+                //Trace.TraceInformation("Queue is empty.");
                 return;
             }
 
@@ -165,7 +196,7 @@ namespace Lib
                 Queue.TryDequeue(out drop);
                 if (isSent)
                 {
-                    Trace.TraceInformation("[{0}] Dequeued sent.", drop.Subject);
+                    //Trace.TraceInformation("[{0}] Dequeued sent.", drop.Subject);
                 }
                 else
                 {
@@ -219,7 +250,14 @@ namespace Lib
                 // email.Bcc
                 // email.ReplyToList;
                 email.Subject = subj;
-                email.Body = body;
+                if (string.IsNullOrWhiteSpace(body))
+                {
+                    email.Body = Signature;
+                }
+                else
+                {
+                    email.Body = body + Environment.NewLine + Signature;
+                }
                 // email.BodyEncoding = Encoding.UTF8;
                 // email.IsBodyHtml = true;
                 // email.Priority = MailPriority.High;
@@ -253,7 +291,8 @@ namespace Lib
                 }
 
                 Queue.Enqueue(email);
-                Trace.TraceInformation("[{0}] Queued to send.", email.Subject);
+                //Trace.TraceInformation("[{0}] Queued to send.", email.Subject);
+                Trace.TraceInformation("[{0}] to send", email.Subject);
             }
             Delivery();
         }
@@ -303,7 +342,7 @@ namespace Lib
 
             try
             {
-                Trace.TraceInformation("[{0}] Sending...", email.Subject);
+                //Trace.TraceInformation("[{0}] Sending...", email.Subject);
                 Client.SendAsync(email, userState);
             }
             catch (SmtpFailedRecipientsException ex)
@@ -368,11 +407,10 @@ namespace Lib
                     DropQueue();
                     break;
                 }
-
+                Thread.Sleep(1000);
                 Trace.TraceInformation("Final delivery waiting...");
                 Delivery();
             }
-
             Stop();
         }
 

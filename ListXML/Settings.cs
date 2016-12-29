@@ -89,6 +89,16 @@ namespace ListXML
 
         static Dictionary<string, string> baseDictionary;
 
+        public static void Display()
+        {
+            Console.WriteLine();
+            foreach (KeyValuePair<string, string> p in baseDictionary)
+            {
+                Console.WriteLine("\t{0}\t = {1}", p.Key, p.Value);
+            }
+            Console.WriteLine();
+        }
+
         public static void Add(string key, string value)
         {
             baseDictionary.Add(key, value);
@@ -107,8 +117,15 @@ namespace ListXML
         public static string GetPath(string key)
         {
             string value = baseDictionary[key];
-            return Environment.ExpandEnvironmentVariables(
-                string.Format(value, DateTime.Now, Assembly.GetCallingAssembly().GetName().Name));
+            if (value.Contains("{"))
+            {
+                value = string.Format(value, DateTime.Now, Assembly.GetCallingAssembly().GetName().Name);
+            }
+            if (value.Contains("%"))
+            {
+                value = Environment.ExpandEnvironmentVariables(value);
+            }
+            return value;
         }
 
         public static bool IsSet(string key, out string value)
@@ -116,17 +133,14 @@ namespace ListXML
             return baseDictionary.TryGetValue(key, out value);
         }
 
-        #region Properties
+        #region Get
+
+        // Get()
 
         /// <summary>
         /// Подписчики для сообщений администратору
         /// </summary>
         public static string Email { get { return baseDictionary["Email"]; } }
-
-        /// <summary>
-        /// Маска файлов для лога (0: DateTime, 1: App.Name), можно использовать %переменные_среды%
-        /// </summary>
-        public static string Log { get { return baseDictionary["Log"]; } }
 
         /// <summary>
         /// Название банка
@@ -159,19 +173,34 @@ namespace ListXML
         public static string UICRKC { get { return baseDictionary["UICRKC"]; } }
 
         /// <summary>
+        /// Файл в накопителе АБС для загрузки (0: List, 1:EDDate.Substring(5))
+        /// </summary>
+        public static string FileABS { get { return baseDictionary["FileABS"]; } }
+
+        #endregion Get
+
+        #region GetPath
+        // GetPath() // (0: DateTime, 1: App.Name), можно использовать %переменные_среды%
+
+        /// <summary>
+        /// Маска файлов для лога
+        /// </summary>
+        public static string Log { get { return GetPath("Log"); } }
+
+        /// <summary>
         /// Файл (имя после @) или построчный перечень счетов для списка 1
         /// </summary>
-        public static string List1 { get { return baseDictionary["List1"]; } }
+        public static string List1 { get { return GetPath("List1"); } }
 
         /// <summary>
         /// Файл (имя после @) или построчный перечень конто для списка 2
         /// </summary>
-        public static string List2 { get { return baseDictionary["List2"]; } }
+        public static string List2 { get { return GetPath("List2"); } }
 
         /// <summary>
         /// Файл XSLT форматирования
         /// </summary>
-        public static string XSLT { get { return baseDictionary["XSLT"]; } }
+        public static string XSLT { get { return GetPath("XSLT"); } }
 
         /// <summary>
         /// Путь к исходным файлам из АРМ КБР (UARM.cfg:MachineConfig\Gates\ChkOut1Dir)
@@ -188,11 +217,6 @@ namespace ListXML
         /// </summary>
         public static string PathABS { get { return GetPath("PathABS"); } }
 
-        /// <summary>
-        /// Файл в накопителе АБС для загрузки (0: List, 1:EDDate.Substring(5))
-        /// </summary>
-        public static string FileABS { get { return GetPath("FileABS"); } }
-
-        #endregion Properties
+        #endregion GetPath
     }
 }

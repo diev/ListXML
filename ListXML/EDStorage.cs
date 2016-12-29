@@ -34,20 +34,20 @@ namespace ListXML
         static EDStorage()
         {
             PathChk = Settings.PathChk;
-            Trace.TraceInformation("Путь к исходным файлам: \"{0}\"", PathChk);
+            //Trace.TraceInformation("Путь к исходным файлам: \"{0}\"", PathChk);
 
             PathXML = Settings.PathXML;
-            Trace.TraceInformation("Путь к хранилищу обрабатываемых файлов: \"{0}\"", PathXML);
+            //Trace.TraceInformation("Путь к хранилищу обрабатываемых файлов: \"{0}\"", PathXML);
 
             PathABS = Settings.PathABS;
-            Trace.TraceInformation("Путь к накопителю для загрузки в АБС: \"{0}\"", PathABS);
+            //Trace.TraceInformation("Путь к накопителю для загрузки в АБС: \"{0}\"", PathABS);
         }
 
         #region Date
         /// <summary>
         /// Текущая дата обработки в формате DateTime
         /// </summary>
-        public static DateTime Date { get; set; }
+        public static DateTime Date { get; set; } = DateTime.Now;
 
         /// <summary>
         /// Текущая дата обработки в формате "YYYY-MM-DD"
@@ -608,7 +608,10 @@ namespace ListXML
 
             #region Пакет или ЭПД
             string node = navigator.LocalName;
-            Trace.TraceInformation("{0} > {1}", fi.Name, node);
+            XmlReader ed = navigator.ReadSubtree();
+            ed.Read();
+            string edno = ed.GetAttribute("EDNo");
+            Trace.TraceInformation("{0} > {1} #{2}", fi.Name, node, edno);
 
             switch (node)
             {
@@ -638,8 +641,8 @@ namespace ListXML
                     {
                         if (Settings.IsSet(node, out subscribers))
                         {
-                            Mailer.Send(subscribers, "Получен " + node, 
-                                "Вы подписаны на получение извещений из АРМ КБР.");
+                            string msg = string.Format("Получен {0} #{1}", node, edno);
+                            Mailer.Send(subscribers, msg);
                         }
                         NewPayments = true;
                     }
@@ -667,6 +670,9 @@ namespace ListXML
             do
             {
                 node = navigator.LocalName;
+                ed = navigator.ReadSubtree();
+                ed.Read();
+                edno = ed.GetAttribute("EDNo");
                 bool defaultMail = true;
 
                 switch (node)
@@ -700,9 +706,6 @@ namespace ListXML
                         {
                             fi.CopyTo(smevFile, true);
 
-                            XmlReader ed = navigator.ReadSubtree();
-                            ed.Read();
-
                             //Номер счета, по которому формируется ЭСИС
                             string ks = ed.GetAttribute("Acc");
                             if (ks.Equals(Settings.KS)) //наш корсчет
@@ -732,9 +735,7 @@ namespace ListXML
 
                                     defaultMail = false;
                                     Mailer.Send(subscribers,
-                                        string.Concat(
-                                            CreditSumFinal ? "Окончательная" : "Промежуточная",
-                                            " выписка за " + EDDate),
+                                        (CreditSumFinal ? "Окончательная" : "Промежуточная") + " выписка за " + EDDate,
                                         "Файл " + node + " за " + EDDate + " прилагается.",
                                         File.Exists(repFile) ? repFile : null);
                                 }
@@ -754,9 +755,6 @@ namespace ListXML
                     case "ED219": //КБР: КЦОИ: Выходная форма
                         #region ED219
                         {
-                            XmlReader ed = navigator.ReadSubtree();
-                            ed.Read();
-
                             //Идентификатор (номер) формы. Заполняется при наличии
                             string reportID = ed.GetAttribute("ReportID");
                             switch (reportID)
@@ -816,10 +814,10 @@ namespace ListXML
                                     break;
 
                                 default:
-                                    Trace.TraceWarning("{0} содержит неизвестный ReportID {1} в ED219", fi.Name, node);
+                                    string msg2 = string.Format("{0} содержит неизвестный ReportID {1} в ED219 #{2}.", fi.FullName, node, edno);
+                                    Trace.TraceWarning(msg2);
                                     defaultMail = false;
-                                    Mailer.Send(Settings.Email, "Получен неизвестный ReportID " + node,
-                                        fi.FullName + " содержит неизвестный ReportID " + node + " в ED219.");
+                                    Mailer.Send(Settings.Email, "Получен неизвестный ReportID " + node, msg2);
                                     break;
                             }
                         }
@@ -941,17 +939,17 @@ namespace ListXML
                         break;
 
                     default:
-                        Trace.TraceWarning("{0} содержит неизвестный {1}", fi.Name, node);
+                        string msg = string.Format("{0} содержит неизвестный документ {1} #{2}.", fi.FullName, node, edno);
+                        Trace.TraceWarning(msg);
                         defaultMail = false;
-                        Mailer.Send(Settings.Email, "Получен неизвестный " + node,
-                            fi.FullName + " содержит неизвестный документ " + node);
+                        Mailer.Send(Settings.Email, string.Format("Получен неизвестный {0} #{1}", node, edno), msg);
                         break;
                 }
 
                 if (Settings.IsSet(node, out subscribers) && defaultMail)
                 {
-                    Mailer.Send(subscribers, "Получен " + node,
-                        "Вы подписаны на получение извещений из АРМ КБР.");
+                    string msg = string.Format("Получен {0} #{1}", node, edno);
+                    Mailer.Send(subscribers, msg);
                 }
             }
             while (navigator.MoveToNext());

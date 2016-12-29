@@ -26,9 +26,13 @@ namespace Lib
 {
     class Options
     {
-        [Option('v', "verbose",
-            HelpText = "Print verbose details during execution.")]
-        public bool Verbose { get; set; }
+        [Option('t', "test",
+            HelpText = "Test display of Settings and exit.")]
+        public bool Test { get; set; }
+
+        [Option('m', "mail", MetaValue = "admin@bank.ru",
+            HelpText = "Send a test mail to this address and exit.")]
+        public string TestMail { get; set; }
 
         [Option('f', "force",
             HelpText = "Force the rebuild of all files.")]
@@ -42,10 +46,6 @@ namespace Lib
             HelpText = "Extract payments only.")]
         public bool Payments { get; set; }
 
-        [Option('m', "mail", MetaValue = "admin@bank.ru",
-            HelpText = "Send a test mail to this address and exit.")]
-        public string TestMail { get; set; }
-
         [Option('d', "date", MetaValue = "YYYY-MM-DD",
             HelpText = "Specify a date to process those files.")]
         public string Date { get; set; }
@@ -53,6 +53,10 @@ namespace Lib
         [Option('s', "switch", MetaValue = "HH", DefaultValue = 11,
             HelpText = "Specify a hour to switch between previous and current days.")]
         public int Hour { get; set; }
+
+        [Option('v', "verbose",
+            HelpText = "Print verbose details during execution.")]
+        public bool Verbose { get; set; }
 
         //[Option('h', "help",
         //    HelpText = "Display this help screen.")]
