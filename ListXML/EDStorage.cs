@@ -725,19 +725,27 @@ namespace ListXML
                                 if (kind.Equals("0")) //окончательная выписка
                                 {
                                     CreditSumFinal = true;
-                                    Trace.TraceInformation("Окончательная выписка получена");
+                                    Trace.TraceInformation("Окончательная выписка получена #{0}", edno);
                                 }
 
                                 if (Settings.IsSet(node, out subscribers))
                                 {
-                                    string repFile = GetPathInFile("ED211-" + EDDate, ".txt");
+                                    string repName = string.Format("{0}-{1}-{2}", node, EDDate, edno);
+                                    string repFile = GetPathInFile(repName, ".txt");
                                     XSLT2File(fi.FullName, repFile);
 
                                     defaultMail = false;
-                                    Mailer.Send(subscribers,
-                                        (CreditSumFinal ? "Окончательная" : "Промежуточная") + " выписка за " + EDDate,
-                                        "Файл " + node + " за " + EDDate + " прилагается.",
-                                        File.Exists(repFile) ? repFile : null);
+                                    string subj = string.Format("{0} выписка за {1} #{2}", (CreditSumFinal ? "Окончательная" : "Промежуточная"), EDDate, edno);
+                                    if (File.Exists(repFile))
+                                    {
+                                        Mailer.Send(subscribers, subj,
+                                            "Файл " + node + " за " + EDDate + " прилагается.", repFile);
+                                    }
+                                    else
+                                    {
+                                        Mailer.Send(subscribers, subj,
+                                            "Файл приложить не удалось - смотрите лог!");
+                                    }
                                 }
                             }
                         }
@@ -768,7 +776,8 @@ namespace ListXML
                                     {
                                         //Дата, за которую запрашивается информация
                                         string repDate = ed.GetAttribute("ReportDate");
-                                        string repFile = GetPathInFile("ED219-" + repDate, ".txt");
+                                        string repName = string.Format("{0}-{1}-{2}", node, EDDate, edno);
+                                        string repFile = GetPathInFile(repName, ".txt");
 
                                         //Текст: содержание формы
                                         ed.ReadToFollowing("ReportContent");
@@ -780,11 +789,18 @@ namespace ListXML
                                         File.WriteAllText(repFile, report, Encoding.GetEncoding(1251));
 
                                         defaultMail = false;
-                                        Mailer.Send(subscribers,
-                                            "Ведомость услуг ЦБ за " + repDate,
-                                            "Файл " + node + " за один день " + repDate + " прилагается.",
-                                            repFile);
-                                        //File.Delete(repFile); //don't delete because this file is still sending!
+                                        string subj = string.Format("Ведомость услуг ЦБ за {0} #{1}", EDDate, edno);
+                                        if (File.Exists(repFile))
+                                        {
+                                            Mailer.Send(subscribers, subj,
+                                                "Файл " + node + " за один день " + repDate + " прилагается.", repFile);
+                                            //File.Delete(repFile); //don't delete because this file is still sending!
+                                        }
+                                        else
+                                        {
+                                            Mailer.Send(subscribers, subj,
+                                                "Файл приложить не удалось - смотрите лог!");
+                                        }
                                     }
                                     break;
 
@@ -793,7 +809,8 @@ namespace ListXML
                                     {
                                         //Дата, за которую запрашивается информация
                                         string repDate = ed.GetAttribute("ReportDate").Substring(0, 7);
-                                        string repFile = GetPathInFile("ED219-" + repDate, ".txt");
+                                        string repName = string.Format("{0}-{1}-{2}", node, EDDate, edno);
+                                        string repFile = GetPathInFile(repName, ".txt");
 
                                         //Текст: содержание формы
                                         ed.ReadToFollowing("ReportContent");
@@ -805,11 +822,18 @@ namespace ListXML
                                         File.WriteAllText(repFile, report, Encoding.GetEncoding(1251));
 
                                         defaultMail = false;
-                                        Mailer.Send(subscribers,
-                                            "Ведомость услуг ЦБ за " + repDate,
-                                            "Файл " + node + " за весь месяц " + repDate + " прилагается.",
-                                            repFile);
-                                        //File.Delete(repFile); //don't delete because this file is still sending!
+                                        string subj = string.Format("Ведомость услуг ЦБ за {0} #{1}", EDDate, edno);
+                                        if (File.Exists(repFile))
+                                        {
+                                            Mailer.Send(subscribers, subj,
+                                                "Файл " + node + " за весь месяц " + repDate + " прилагается.", repFile);
+                                            //File.Delete(repFile); //don't delete because this file is still sending!
+                                        }
+                                        else
+                                        {
+                                            Mailer.Send(subscribers, subj,
+                                                "Файл приложить не удалось - смотрите лог!");
+                                        }
                                     }
                                     break;
 
@@ -1011,7 +1035,16 @@ namespace ListXML
 
                 if (outText.Length > 0)
                 {
-                    File.WriteAllText(txtFile, outText, Encoding.GetEncoding(1251));
+                    try
+                    {
+                        //Trace.TraceInformation("Экспорт {0}", txtFile);
+                        File.WriteAllText(txtFile, outText, Encoding.GetEncoding(1251));
+                    }
+                    catch (Exception ex) //возникает при затирании файла, когда с тем же именем еще не отправлен (исправлено добавлением уникального EDNo)
+                    {
+                        //Процесс не может получить доступ к файлу "...\ED211-2016-12-29.txt", так как этот файл используется другим процессом.)
+                        Trace.TraceWarning(ex.Message);
+                    }
                 }
             }
         }
