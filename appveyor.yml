@@ -28,7 +28,7 @@ before_build:
       }
     }
 
-    $CommitTimestamp = $env:APPVEYOR_REPO_COMMIT_TIMESTAMP
+    $CommitTimestamp = [datetime]::Parse($env:APPVEYOR_REPO_COMMIT_TIMESTAMP)
 
     $BuildTimestamp = $CommitTimestamp.AddHours(3).ToString("yMMdd")
 
