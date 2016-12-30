@@ -47,12 +47,9 @@ skip_commits:
 # Including commits affecting specific files (GitHub only). More details here: /docs/appveyor-yml
 only_commits:
   files:
-#    - Project-A/
-#    - Project-B/
     - ListXML/
+    - appveyor.yml
 
-# Including commits with particular message or from specific user
-#only_commits:
   message: /build/                # Start a new build if message contains 'build'
 #  author: jack@company.com        # Start a new build for commit of user with email jack@company.com
 
@@ -257,6 +254,7 @@ before_test:
 
 # scripts to run after tests
 after_test:
+  - %APPVEYOR_PROJECT_NAME%.exe -t
 
 # to run your custom scripts instead of automatic tests
 test_script:
@@ -295,8 +293,8 @@ deploy:
     artifact: AppZip
     draft: false
     prerelease: false
-    on:
-      branch: master
+#    on:
+#      branch: master
 
 # scripts to run before deployment
 before_deploy:
