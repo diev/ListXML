@@ -254,7 +254,7 @@ before_test:
 
 # scripts to run after tests
 after_test:
-  - %APPVEYOR_PROJECT_NAME%.exe -t
+  - $(appveyor_project_name).exe -t
 
 # to run your custom scripts instead of automatic tests
 test_script:
