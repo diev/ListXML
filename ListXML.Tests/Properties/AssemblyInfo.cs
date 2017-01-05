@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("АО Сити Инвест Банк")]
 [assembly: AssemblyProduct("ListXML.Tests")]
-[assembly: AssemblyCopyright("Copyright © Dmitrii Evdokimov 2016")]
+[assembly: AssemblyCopyright("Copyright © Dmitrii Evdokimov 2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

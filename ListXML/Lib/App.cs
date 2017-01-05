@@ -35,18 +35,19 @@ namespace Lib
             Name = assemblyName.Name;
 
             // Major.Minor.Build.Revision
-            Ver = assemblyName.Version.Build > 60101
-                ? assemblyName.Version
-                : new Version(1, 0, 60101, 0);
+            //Ver = assemblyName.Version.Build > 60101
+            //    ? assemblyName.Version
+            //    : new Version(1, 0, 60101, 0);
+            Ver = assemblyName.Version;
 
             // 1.0.0.0 (by default)
             // 1.0.2016.815 (yyyy.[M]Mdd, where Build = yyyy, Revision = Mdd)
             //public static readonly DateTime Dated = DateTime.Parse(string.Format("{0}-{1}-{2}", Ver.Build, Ver.Revision / 100, Ver.Revision % 100));
             // 1.0.60815.0 (yMMdd, where Build = yMMdd)
-            SDated = string.Format("201{0}-{1}-{2}", Ver.Build / 10000, Ver.Build % 10000 / 100, Ver.Build % 100);
-            Dated = DateTime.Parse(SDated);
-
-            Version = string.Format("{0} v{1}", Name, Ver); // Ver.ToString(2), Ver.Build, Ver.Revision
+            //SDated = string.Format("201{0}-{1}-{2}", Ver.Build / 10000, Ver.Build % 10000 / 100, Ver.Build % 100);
+            //Dated = DateTime.Parse(SDated);
+            //Version = string.Format("{0} v{1}", Name, Ver); // Ver.ToString(2), Ver.Build, Ver.Revision
+            Version = string.Format("{0} v{1}", Name, Ver.ToString(3));
 
             AssemblyDescriptionAttribute descriptionAttribute = Attribute.GetCustomAttribute(assembly, typeof(AssemblyDescriptionAttribute)) as AssemblyDescriptionAttribute;
             Description = descriptionAttribute.Description;
@@ -85,11 +86,11 @@ namespace Lib
         // 1.0.2016.815 (yyyy.[M]Mdd, where Build = yyyy, Revision = Mdd)
         //public static readonly DateTime Dated = DateTime.Parse(string.Format("{0}-{1}-{2}", Ver.Build, Ver.Revision / 100, Ver.Revision % 100));
         // 1.0.60815.0 (yMMdd, where Build = yMMdd)
-        public static string SDated { get; }
-        public static DateTime Dated { get; }
+        //public static string SDated { get; }
+        //public static DateTime Dated { get; }
 
         /// <summary>
-        /// Строка с версией и датой версии приложения
+        /// Строка с названием и версией приложения
         /// </summary>
         public static string Version { get; }
 
