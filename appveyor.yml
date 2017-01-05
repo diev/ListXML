@@ -1,40 +1,28 @@
-version: '{build}'
+version: 6.2.{build}
 pull_requests:
   do_not_increment_build_number: true
 branches:
   only:
   - master
+skip_tags: true
 skip_branch_with_pr: true
 max_jobs: 1
 configuration: Release
 init:
 - cmd: git config --global core.autocrlf input
-before_build:
+assembly_info:
+  patch: true
+  file: '**\AssemblyInfo.*'
+  assembly_version: '{version}'
+  assembly_file_version: '{version}'
+  assembly_informational_version: '{version}'
+install:
 - ps: >-
-    $AssemblyFile = "$env:APPVEYOR_PROJECT_NAME\Properties\AssemblyInfo.cs"
+    $CommitDateTime = [datetime]::Parse($env:APPVEYOR_REPO_COMMIT_TIMESTAMP)
 
-    $RegularExpression = [regex] '^\[assembly: AssemblyFileVersion\(\"(\d*)\.(\d*)\.(\d*)\.(\d*)\"\)\]$'
+    $env:BuildDate = $CommitDateTime.AddHours(3).ToString('dd.MM.yyyy')
 
-    $FileContent = Get-Content $AssemblyFile
-
-    foreach($content in $FileContent) {
-      $match = [System.Text.RegularExpressions.Regex]::Match($content, $RegularExpression)
-      if($match.Success) {
-        $ver1 = $match.groups[1].value
-        $ver2 = $match.groups[2].value
-        $ver3 = $match.groups[3].value
-        $ver4 = $match.groups[4].value
-        break
-      }
-    }
-
-    $CommitTimestamp = [datetime]::Parse($env:APPVEYOR_REPO_COMMIT_TIMESTAMP)
-
-    $BuildTimestamp = $CommitTimestamp.AddHours(3).ToString("yMMdd")
-
-    Update-AppveyorBuild -Version ("{0}.{1}.{2}.{3}" -f $ver1, $ver2, $BuildTimestamp, $env:APPVEYOR_BUILD_NUMBER)
-
-    Write-Host "Building v$env:APPVEYOR_BUILD_VERSION ($env:APPVEYOR_REPO_COMMIT_TIMESTAMP)"
+    Write-Host "Building v$env:APPVEYOR_BUILD_VERSION dated $env:BuildDate"
 build:
   verbosity: minimal
 before_package:
@@ -47,6 +35,8 @@ before_package:
 
     echo README.md >>Package
 
+    copy %APPVEYOR_PROJECT_NAME%\*.xslt
+
     echo UFEBS.xslt >>Package
 after_build:
 - cmd: 7z a %APPVEYOR_PROJECT_NAME%-v%APPVEYOR_BUILD_VERSION%.zip @Package
@@ -56,7 +46,7 @@ artifacts:
 deploy:
 - provider: GitHub
   tag: v$(appveyor_build_version)
-  release: $(appveyor_project_name)-v$(appveyor_build_version)
+  release: $(appveyor_project_name) v$(appveyor_build_version)
   description: '$(appveyor_repo_commit_message)\n$(appveyor_repo_commit_message_extended)\n\nThis is an automatic build #$(appveyor_build_number) by AppVeyor\nSee more on https://$(appveyor_account_name).github.io/$(appveyor_project_name)/'
   auth_token:
     secure: CePfctnBFd3iDwgVWlGOD6mfxQZrNBHK7IpsCK/deo2vHxA3lTr2nRnhbqpKqchQ
@@ -64,3 +54,5 @@ deploy:
   draft: false
   prerelease: true
   force_update: true
+  on:
+    branch: master
