@@ -98,7 +98,7 @@ namespace CommandLine
                 {
                     with.CaseSensitive = false;
                     with.MutuallyExclusive = false;
-                    with.HelpWriter = Console.Error;
+                    with.HelpWriter = Console.Out; //Console.Error; //DE
                     with.ParsingCulture = CultureInfo.InvariantCulture;
                 })
         {

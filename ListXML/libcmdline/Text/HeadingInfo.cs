@@ -85,9 +85,9 @@ namespace CommandLine.Text
                     : Path.GetFileNameWithoutExtension(titleAttribute.Title);
                 var versionAttribute = ReflectionHelper.GetAttribute<AssemblyInformationalVersionAttribute>();
                 string version = versionAttribute == null
-                    ? ReflectionHelper.AssemblyFromWhichToPullInformation.GetName().Version.ToString()
+                    ? ReflectionHelper.AssemblyFromWhichToPullInformation.GetName().Version.ToString(3) //DE
                     : versionAttribute.InformationalVersion;
-                return new HeadingInfo(title, version);
+                return new HeadingInfo(title, "v" + version); //DE
             }
         }
 

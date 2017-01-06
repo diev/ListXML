@@ -4,11 +4,10 @@
 ===========================
 
 Показ параметров с ключом `-h` или `--help`.
-При желании перехватить вывод в файл: `ListXML -h 2>help.txt`
 
 ```
-ListXML 6.2.61229.0
-Copyright (c) Dmitrii Evdokimov 2009-2016
+ListXML v6.2.72
+Copyright (c) Dmitrii Evdokimov 2009-2017
 
   -t, --test                                Test display of Settings and exit.
 
