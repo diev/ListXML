@@ -86,6 +86,7 @@
                 }
                 var asset = release.assets[0];
                 var fileSize = Math.round(asset.size / 1024);
+                var date = Date.parse(asset.updated_at);
                 $(".table-downloads tbody")
                   .append($("<tr>")
                     .append($("<td>")
@@ -99,6 +100,10 @@
                       .append($("<a>")
                         .attr("href", asset.browser_download_url)
                         .text(fileSize.toLocaleString() + " KB")
+                      )
+                    )
+                    .append($("<td>")
+                      .text(date.toLocaleString())
                       )
                     )
                   );
