@@ -1,6 +1,6 @@
 # ListXML - Нарезка входящих из АРМ КБР
 
-[![Build status](https://ci.appveyor.com/api/projects/status/45j0q24sg6aiiq52?svg=true)](https://ci.appveyor.com/project/diev/listxml)  
+[![Build status](https://ci.appveyor.com/api/projects/status/45j0q24sg6aiiq52?svg=true)](https://ci.appveyor.com/project/diev/listxml) 
 [![GitHub Release](https://img.shields.io/github/release/diev/ListXML.svg)](https://github.com/diev/ListXML/releases/latest)
 
 Из системы СВК Банка России поступают файлы в зашифрованном виде. 

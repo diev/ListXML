@@ -8,6 +8,9 @@
 {% else %}
 <html lang="ru">
 {% endif %}
+{% if page.url contains "/download" %}
+  {% assign download = true %}
+{% endif %}
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
@@ -59,21 +62,30 @@
             {% if en %}
             <span class="credits left">Project by <a href="/en" title="Home Page">Dmitrii Evdokimov</a></span>
             <span class="credits right">Hosted on GitHub:
-              <a href="{{ site.github.repository_url }}" title="Project">View</a> |
-              <a href="download" title="Download">Releases</a>
+              <a href="{{ site.github.repository_url }}" title="Project">View</a>
+              {% if download %}
+              | <a href="download" title="Download">Releases</a>
+              {% endif %}
             </span>
             {% else %}
             <span class="credits left">Project by <a href="/" title="Сайт">Дмитрий Евдокимов</a></span>
             <span class="credits right">Hosted on GitHub:
-              <a href="{{ site.github.repository_url }}" title="Проект">Смотреть</a> |
-              <a href="download" title="Загрузки">Скачать</a>
+              <a href="{{ site.github.repository_url }}" title="Проект">Смотреть</a> 
+              {% if download %}
+              | <a href="download" title="Загрузки">Скачать</a>
+              {% endif %}
             </span>
             {% endif %}
           </div>
           {{ content }}
-          {% if page.url contains "/download" %}
+          {% if download %}
           <div><span class="spinning"></span></div>
           <table class="table-downloads">
+            <thead>
+              <th>Заметки к выпуску</th>
+              <th>Скачать</th>
+              <th>Дата выпуска</th>
+            </thead>
             <tbody>
             </tbody>
           </table>
@@ -102,7 +114,7 @@
                       )
                     )
                     .append($("<td>")
-                      .text(asset.updated_at)
+                      .text(asset.updated_at.substring(0, 10))
                     )
                   );
               }
@@ -110,7 +122,13 @@
               $(".table.downloads").fadeIn();
             });
           </script>
-          <div><a href="{{ site.github.releases_url }}" title="Загрузки">Скачать</a></div>
+          <noscript>
+            {% if en %}
+            <p><a href="{{ site.github.releases_url }}" title="Downloads">Releases Page on GitHub</a></p>
+            {% else %}
+            <p><a href="{{ site.github.releases_url }}" title="Загрузки">Страница релизов на GitHub</a></p>
+            {% endif %}
+          </noscript>
           {% endif %}
         {% endif %}
       </section>
