@@ -63,17 +63,17 @@
             <span class="credits left">Project by <a href="/en" title="Home Page">Dmitrii Evdokimov</a></span>
             <span class="credits right">Hosted on GitHub:
               <a href="{{ site.github.repository_url }}" title="Project">View</a>
-              {% if download %}
+              {% unless download %}
               | <a href="download" title="Download">Releases</a>
-              {% endif %}
+              {% endunless %}
             </span>
             {% else %}
             <span class="credits left">Project by <a href="/" title="Сайт">Дмитрий Евдокимов</a></span>
             <span class="credits right">Hosted on GitHub:
               <a href="{{ site.github.repository_url }}" title="Проект">Смотреть</a> 
-              {% if download %}
+              {% unless download %}
               | <a href="download" title="Загрузки">Скачать</a>
-              {% endif %}
+              {% endunless %}
             </span>
             {% endif %}
           </div>
