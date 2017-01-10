@@ -78,7 +78,7 @@
             </tbody>
           </table>
           <script>
-            $.getJSON("http://api.github.com/repos/{{ site.github.repository_name }}/releases").done(function(json) {
+            $.getJSON("http://api.github.com/repos/{{ site.github.owner_name }}/{{ site.github.repository_name }}/releases").done(function(json) {
               for (var i = 0; i < json.length; i++) {
                 var release = json[i];
                 if (release.assets.length === 0) {
