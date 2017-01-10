@@ -86,7 +86,6 @@
                 }
                 var asset = release.assets[0];
                 var fileSize = Math.round(asset.size / 1024);
-                var date = Date.parse(asset.updated_at);
                 $(".table-downloads tbody")
                   .append($("<tr>")
                     .append($("<td>")
@@ -103,7 +102,7 @@
                       )
                     )
                     .append($("<td>")
-                      .text(date.format("DD.MM.YYYY"))
+                      .text(asset.updated_at)
                     )
                   );
               }
