@@ -60,18 +60,19 @@
             <span class="credits left">Project by <a href="/en" title="Home Page">Dmitrii Evdokimov</a></span>
             <span class="credits right">Hosted on GitHub:
               <a href="{{ site.github.repository_url }}" title="Project">View</a> |
-              <a href="{{ site.github.releases_url }}/download" title="Download">Releases</a>
+              <a href="download" title="Download">Releases</a>
             </span>
             {% else %}
             <span class="credits left">Project by <a href="/" title="Сайт">Дмитрий Евдокимов</a></span>
             <span class="credits right">Hosted on GitHub:
               <a href="{{ site.github.repository_url }}" title="Проект">Смотреть</a> |
-              <a href="{{ site.github.releases_url }}/download" title="Загрузки">Скачать</a>
+              <a href="download" title="Загрузки">Скачать</a>
             </span>
             {% endif %}
           </div>
           {{ content }}
           {% if page.url contains "/download" %}
+          <div><span class="spinning"></span></div>
           <table class="table-downloads">
             <tbody>
             </tbody>
@@ -105,6 +106,7 @@
             $(".spinning").hide();
             $(".table.downloads").fadeIn();
           </script>
+          <div><a href="{{ site.github.releases_url }}" title="Загрузки">Скачать</a></div>
           {% endif %}
         {% endif %}
       </section>
