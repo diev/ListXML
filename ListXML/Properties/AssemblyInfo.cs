@@ -25,7 +25,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("ListXML")]
 [assembly: AssemblyDescription("Нарезка входящих из АРМ КБР")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("АО Сити Инвест Банк")]
+[assembly: AssemblyCompany("Cibank")]
 [assembly: AssemblyProduct("ListXML")]
 [assembly: AssemblyCopyright("Copyright (c) Dmitrii Evdokimov 2009-2017")]
 [assembly: AssemblyTrademark("")]
