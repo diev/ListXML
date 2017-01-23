@@ -6,7 +6,7 @@
 Показ параметров с ключом `-h` или `--help`.
 
 ```
-ListXML v6.2.72
+ListXML v6.3.0
 Copyright (c) Dmitrii Evdokimov 2009-2017
 
   -t, --test                                Test display of Settings and exit.
@@ -23,7 +23,7 @@ Copyright (c) Dmitrii Evdokimov 2009-2017
   -d YYYY-MM-DD, --date=YYYY-MM-DD          Specify a date to process those 
                                             files.
 
-  -s HH, --switch=HH                        (Default: 11) Specify a hour to 
+  -s HH, --switch=HH                        (Default: 10) Specify a hour to 
                                             switch between previous and current
                                             days.
 
