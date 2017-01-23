@@ -40,18 +40,18 @@ namespace Lib
                 {
                     AppExit.Error("Ошибка создания директории " + dir);
                     //If wrong, creates in the App directory.
-                    //Trace.TraceError("Директорию не создать:" + ex.Message);
+                    //AppTrace.Error("Директорию не создать:" + ex.Message);
                     //dir = Path.Combine(App.Dir, "_Recovery", Path.GetDirectoryName(dir));
                     //Directory.CreateDirectory(dir);
-                    //Trace.TraceWarning("Recovery directory {0} created.", dir);
+                    //AppTrace.Warning("Recovery directory {0} created.", dir);
                 }
                 catch (IOException)
                 {
                     AppExit.Error("Нет диска для директории " + dir);
-                    //Trace.TraceError("Сетевой диск не доступен: " + ex.Message);
+                    //AppTrace.Error("Сетевой диск не доступен: " + ex.Message);
                     //dir = Path.Combine(App.Dir, "_Recovery", Path.GetDirectoryName(dir));
                     //Directory.CreateDirectory(dir);
-                    //Trace.TraceWarning("Recovery directory {0} created.", dir);
+                    //AppTrace.Warning("Recovery directory {0} created.", dir);
                 }
                 catch (Exception ex)
                 {

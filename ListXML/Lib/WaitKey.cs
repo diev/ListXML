@@ -54,11 +54,11 @@ namespace Lib
 
             if (Canceled)
             {
-                Trace.TraceInformation("Waiting canceled by user.");
+                AppTrace.Information("Waiting canceled by user.");
             }
             else if (TimedOut)
             {
-                Trace.TraceInformation("Waiting timed out.");
+                AppTrace.Information("Waiting timed out.");
             }
         }
 
@@ -84,11 +84,11 @@ namespace Lib
 
             if (Canceled)
             {
-                Trace.TraceInformation("Waiting canceled by user.");
+                AppTrace.Information("Waiting canceled by user.");
             }
             else if (TimedOut)
             {
-                Trace.TraceInformation("Waiting timed out.");
+                AppTrace.Information("Waiting timed out.");
             }
 
             return Canceled;
@@ -100,7 +100,7 @@ namespace Lib
             TimedOut = false;
             Pressed = false;
             WaitEscapeOnly = false;
-            Trace.TraceInformation("Waiting a key...");
+            AppTrace.Information("Waiting a key...");
         }
 
         class StatusChecker

@@ -15,6 +15,7 @@
 //------------------------------------------------------------------------------
 #endregion
 
+using Lib;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -31,9 +32,6 @@ namespace ListXML
             // Default values for app.config
             baseDictionary = new Dictionary<string, string>()
             {
-                // Маска файлов для лога (0: DateTime, 1: App.Name), можно использовать %переменные_среды%
-                { "Log", @"%TEMP%\{1}\log\{0:yyyyMMdd}_{1}.log" },
-
                 // Название банка
                 { "Bank", "АО &quot;Сити Инвест Банк&quot;" },
                 // БИК банка
@@ -77,7 +75,7 @@ namespace ListXML
 
                 if (baseDictionary.ContainsKey(key))
                 {
-                    Trace.TraceInformation("Key \"{0}\" overrided with value \"{1}\".", key, value);
+                    AppTrace.Information("Key \"{0}\" overrided with value \"{1}\".", key, value);
                     baseDictionary[key] = value;
                 }
                 else
@@ -117,15 +115,16 @@ namespace ListXML
         public static string GetPath(string key)
         {
             string value = baseDictionary[key];
-            if (value.Contains("{"))
-            {
-                value = string.Format(value, DateTime.Now, Assembly.GetCallingAssembly().GetName().Name);
-            }
-            if (value.Contains("%"))
-            {
-                value = Environment.ExpandEnvironmentVariables(value);
-            }
-            return value;
+            //if (value.Contains("{"))
+            //{
+            //    value = string.Format(value, DateTime.Now, Assembly.GetCallingAssembly().GetName().Name);
+            //}
+            //if (value.Contains("%"))
+            //{
+            //    value = Environment.ExpandEnvironmentVariables(value);
+            //}
+            //return value;
+            return value.ExpandPath();
         }
 
         public static bool IsSet(string key, out string value)
@@ -181,11 +180,6 @@ namespace ListXML
 
         #region GetPath
         // GetPath() // (0: DateTime, 1: App.Name), можно использовать %переменные_среды%
-
-        /// <summary>
-        /// Маска файлов для лога
-        /// </summary>
-        public static string Log { get { return GetPath("Log"); } }
 
         /// <summary>
         /// Файл (имя после @) или построчный перечень счетов для списка 1

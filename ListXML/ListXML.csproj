@@ -57,7 +57,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Lib\AppTraceListener.cs" />
+    <Compile Include="Lib\AppConsoleListener.cs" />
+    <Compile Include="Lib\AppLogFileListener.cs" />
+    <Compile Include="Lib\AppTrace.cs" />
     <Compile Include="libcmdline\Attributes\AssemblyLicenseAttribute.cs" />
     <Compile Include="libcmdline\Attributes\AssemblyUsageAttribute.cs" />
     <Compile Include="libcmdline\Attributes\BaseOptionAttribute.cs" />
@@ -115,6 +117,7 @@
     <Compile Include="Lib\Password.cs" />
     <Compile Include="Lib\IOChecks.cs" />
     <Compile Include="Lib\Pinger.cs" />
+    <Compile Include="Lib\StringExtension.cs" />
     <Compile Include="Lib\WaitKey.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="PacketEPD.cs" />

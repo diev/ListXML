@@ -33,7 +33,7 @@ namespace Lib
         {
             if (toDecode.Contains("*"))
             {
-                Trace.TraceWarning("Звездочки вместо пароля.");
+                AppTrace.Warning("Звездочки вместо пароля.");
                 throw new ArgumentException("Asteriks instead of password", "Password");
                 //return toDecode;
             }
@@ -54,7 +54,7 @@ namespace Lib
 
             catch (Exception e)
             {
-                Trace.TraceError("Пароль поврежден.");
+                AppTrace.Error("Пароль поврежден.");
                 throw new Exception("Password broken", e);
                 //ex.MessageError of Base64:
                 //Входные данные не являются действительной строкой Base - 64, поскольку содержат символ в кодировке,

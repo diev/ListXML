@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("ListXML.Tests")]
 [assembly: AssemblyDescription("Тестирование основного проекта")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("АО Сити Инвест Банк")]
+[assembly: AssemblyCompany("Cibank")]
 [assembly: AssemblyProduct("ListXML.Tests")]
 [assembly: AssemblyCopyright("Copyright © Dmitrii Evdokimov 2017")]
 [assembly: AssemblyTrademark("")]
@@ -31,5 +31,5 @@ using System.Runtime.InteropServices;
 // Можно задать все значения или принять номера сборки и редакции по умолчанию 
 // используя "*", как показано ниже:
 // [сборка: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("6.3.0.0")]
+[assembly: AssemblyFileVersion("6.3.0.0")]

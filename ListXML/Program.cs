@@ -35,15 +35,13 @@ namespace ListXML
 
         static void Main(string[] args)
         {
-            Trace.Listeners.Add(new AppTraceListener(Settings.Log));
-
             #region Options
             Parser.Default.ParseArgumentsStrict(args, Options);
 
             #region Verbose
-            if (Options.Verbose || AppTraceListener.TraceConsole.TraceVerbose)
+            if (Options.Verbose)
             {
-                Trace.Listeners.Add(new AppTraceListener());
+                AppTrace.TraceSource.Switch.Level = SourceLevels.All;
             }
             #endregion Verbose
 
@@ -60,7 +58,7 @@ namespace ListXML
                 sb.Append(" ");
                 sb.Append(arg);
             }
-            Trace.TraceInformation(sb.ToString());
+            AppTrace.Information(sb);
             #endregion Info
 
             #region TestSettings
@@ -96,7 +94,7 @@ namespace ListXML
                 DateTime date;
                 if (DateTime.TryParse(Options.Date, out date))
                 {
-                    Trace.TraceInformation("Работа за день {0:yyyy-MM-dd}.", date);
+                    AppTrace.Verbose("Работа за день {0:yyyy-MM-dd}.", date);
                     EDStorage.Date = date;
                 }
                 else
@@ -107,7 +105,7 @@ namespace ListXML
             }
             else if (DateTime.Now.Hour < Options.Hour)
             {
-                Trace.TraceInformation("Время работать предыдущим днем.");
+                AppTrace.Verbose("Время работать предыдущим днем.");
                 EDStorage.SetLastEDDate(DateTime.Now);
             }
             #endregion Date

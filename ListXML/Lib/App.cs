@@ -21,7 +21,7 @@ using System.Reflection;
 namespace Lib
 {
     /// <summary>
-    /// Properties of application
+    /// Properties of Application
     /// </summary>
     public static class App
     {
@@ -35,19 +35,17 @@ namespace Lib
             Name = assemblyName.Name;
 
             // Major.Minor.Build.Revision
-            //Ver = assemblyName.Version.Build > 60101
-            //    ? assemblyName.Version
-            //    : new Version(1, 0, 60101, 0);
             Ver = assemblyName.Version;
-
-            // 1.0.0.0 (by default)
-            // 1.0.2016.815 (yyyy.[M]Mdd, where Build = yyyy, Revision = Mdd)
-            //public static readonly DateTime Dated = DateTime.Parse(string.Format("{0}-{1}-{2}", Ver.Build, Ver.Revision / 100, Ver.Revision % 100));
-            // 1.0.60815.0 (yMMdd, where Build = yMMdd)
-            //SDated = string.Format("201{0}-{1}-{2}", Ver.Build / 10000, Ver.Build % 10000 / 100, Ver.Build % 100);
-            //Dated = DateTime.Parse(SDated);
-            //Version = string.Format("{0} v{1}", Name, Ver); // Ver.ToString(2), Ver.Build, Ver.Revision
-            Version = string.Format("{0} v{1}", Name, Ver.ToString(3));
+            if (Ver.Revision > 0)
+            {
+                Build = Ver.Revision.ToString();
+                Version = string.Format("{0} v{1} build {2}", Name, Ver.ToString(3), Build);
+            }
+            else
+            {
+                Build = string.Empty;
+                Version = string.Format("{0} v{1}", Name, Ver.ToString(3));
+            }
 
             AssemblyDescriptionAttribute descriptionAttribute = Attribute.GetCustomAttribute(assembly, typeof(AssemblyDescriptionAttribute)) as AssemblyDescriptionAttribute;
             Description = descriptionAttribute.Description;
@@ -80,17 +78,12 @@ namespace Lib
         public static Version Ver { get; }
 
         /// <summary>
-        /// Дата версии приложения
+        /// Строка с номером билда приложения, если есть
         /// </summary>
-        // 1.0.0.0 (by default)
-        // 1.0.2016.815 (yyyy.[M]Mdd, where Build = yyyy, Revision = Mdd)
-        //public static readonly DateTime Dated = DateTime.Parse(string.Format("{0}-{1}-{2}", Ver.Build, Ver.Revision / 100, Ver.Revision % 100));
-        // 1.0.60815.0 (yMMdd, where Build = yMMdd)
-        //public static string SDated { get; }
-        //public static DateTime Dated { get; }
+        public static string Build { get; }
 
         /// <summary>
-        /// Строка с названием и версией приложения
+        /// Строка с названием и версией (+билд, если есть) приложения
         /// </summary>
         public static string Version { get; }
 
