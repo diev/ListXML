@@ -19,12 +19,12 @@ using System;
 using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Configuration;
-using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Configuration;
 using System.Net.Mail;
 using System.Net.Mime;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 
@@ -99,8 +99,12 @@ namespace Lib
                     path = pickup.PickupDirectoryLocation;
                     if (path.Contains("{"))
                     {
-                        path = string.Format(path, DateTime.Now, App.Name);
+                        string format = path.Replace("%Now%", "0").Replace("%App%", "1");
+                        path = string.Format(format,
+                            DateTime.Now,
+                            Assembly.GetCallingAssembly().GetName().Name);
                     }
+
                     if (path.Contains("%"))
                     {
                         path = Environment.ExpandEnvironmentVariables(path);

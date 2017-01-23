@@ -55,6 +55,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="Lib\AppConfigTests.cs" />
     <Compile Include="Lib\BankLSTests.cs" />
     <Compile Include="Lib\IOChecksTests.cs" />
     <Compile Include="SettingsTests.cs" />

@@ -16,31 +16,20 @@
 #endregion
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.IO;
 
 namespace Lib.Tests
 {
     [TestClass()]
-    public class IOChecksTests
+    public class AppConfigTests
     {
-        [TestMethod()]
-        public void CheckDirectoryTest()
-        {
-            string test = IOChecks.CheckDirectory(App.Dir);
-            if (!Directory.Exists(test))
-            {
-                Assert.Fail("App.Dir doesn't exist");
-            }
-        }
-
-        [TestMethod()]
-        public void CheckFileDirectoryTest()
-        {
-            string test = IOChecks.CheckFileDirectory(App.Exe);
-            if (!Directory.Exists(test))
-            {
-                Assert.Fail("App.Dir doesn't exist");
-            }
-        }
+        //[TestMethod()]
+        //public void IsSetTest()
+        //{
+        //    string test;
+        //    if (!AppConfig.IsSet("Email", out test))
+        //    {
+        //        Assert.Fail();
+        //    }
+        //}
     }
 }

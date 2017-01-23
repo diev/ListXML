@@ -16,11 +16,6 @@
 #endregion
 
 using Lib;
-using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Configuration;
-using System.Reflection;
 
 namespace ListXML
 {
@@ -44,9 +39,9 @@ namespace ListXML
             // Путь к исходным файлам из АРМ КБР (UARM.cfg:MachineConfig\Gates\ChkOut1Dir)
             AppConfig.AddDefault("PathChk", @"c:\uarm3\exg\chk\");
             // Путь к хранилищу обрабатываемых файлов
-            AppConfig.AddDefault("PathXML", @"%TEMP%\{1}\xml\");
+            AppConfig.AddDefault("PathXML", @"%TEMP%\{%App%}\xml\");
             // Путь к накопителю для загрузки в АБС
-            AppConfig.AddDefault("PathABS", @"%TEMP%\{1}\in\");
+            AppConfig.AddDefault("PathABS", @"%TEMP%\{%App%}\in\");
             // Файл в накопителе АБС для загрузки (0: List, 1:EDDate.Substring(5))
             AppConfig.AddDefault("FileABS", @"LIST{0}\List{0}-{1}.xml");
 
@@ -68,42 +63,90 @@ namespace ListXML
         /// <summary>
         /// Подписчики для сообщений администратору
         /// </summary>
-        public static string Email { get; } = AppConfig.Get("Email");
+        public static string Email
+        {
+            get
+            {
+                return AppConfig.Get("Email");
+            }
+        }
 
         /// <summary>
         /// Название банка
         /// </summary>
-        public static string Bank { get; } = AppConfig.Get("Bank");
+        public static string Bank
+        {
+            get
+            {
+                return AppConfig.Get("Bank");
+            }
+        }
 
         /// <summary>
         /// БИК банка
         /// </summary>
-        public static string BIC { get; } = AppConfig.Get("BIC");
+        public static string BIC
+        {
+            get
+            {
+                return AppConfig.Get("BIC");
+            }
+        }
 
         /// <summary>
         /// Корсчет банка
         /// </summary>
-        public static string KS { get; } = AppConfig.Get("KS");
+        public static string KS
+        {
+            get
+            {
+                return AppConfig.Get("KS");
+            }
+        }
 
         /// <summary>
         /// Название ТУ Банка России
         /// </summary>
-        public static string RKC { get; } = AppConfig.Get("RKC");
+        public static string RKC
+        {
+            get
+            {
+                return AppConfig.Get("RKC");
+            }
+        }
 
         /// <summary>
         /// UIC банка в АРМ КБР
         /// </summary>
-        public static string UICBank { get; } = AppConfig.Get("UICBank");
+        public static string UICBank
+        {
+            get
+            {
+                return AppConfig.Get("UICBank");
+            }
+        }
 
         /// <summary>
         /// UIC ТУ Банка России в АРМ КБР
         /// </summary>
-        public static string UICRKC { get; } = AppConfig.Get("UICRKC");
+        public static string UICRKC
+        {
+            get
+            {
+                return AppConfig.Get("UICRKC");
+            }
+        }
 
         /// <summary>
         /// Файл в накопителе АБС для загрузки (0: List, 1:EDDate.Substring(5))
         /// </summary>
-        public static string FileABS { get; } = AppConfig.Get("FileABS");
+        public static string FileABS
+        {
+            get
+            {
+                return AppConfig.Get("FileABS");
+            }
+        }
 
         #endregion Get
 
@@ -113,32 +156,68 @@ namespace ListXML
         /// <summary>
         /// Файл (имя после @) или построчный перечень счетов для списка 1
         /// </summary>
-        public static string List1 { get; } = AppConfig.GetPath("List1");
+        public static string List1
+        {
+            get
+            {
+                return AppConfig.GetPath("List1");
+            }
+        }
 
         /// <summary>
         /// Файл (имя после @) или построчный перечень конто для списка 2
         /// </summary>
-        public static string List2 { get; } = AppConfig.GetPath("List2");
+        public static string List2
+        {
+            get
+            {
+                return AppConfig.GetPath("List2");
+            }
+        }
 
         /// <summary>
         /// Файл XSLT форматирования
         /// </summary>
-        public static string XSLT { get; } = AppConfig.GetPath("XSLT");
+        public static string XSLT
+        {
+            get
+            {
+                return AppConfig.GetPath("XSLT");
+            }
+        }
 
         /// <summary>
         /// Путь к исходным файлам из АРМ КБР (UARM.cfg:MachineConfig\Gates\ChkOut1Dir)
         /// </summary>
-        public static string PathChk { get; } = AppConfig.GetPath("PathChk");
+        public static string PathChk
+        {
+            get
+            {
+                return AppConfig.GetPath("PathChk");
+            }
+        }
 
         /// <summary>
         /// Путь к хранилищу обрабатываемых файлов
         /// </summary>
-        public static string PathXML { get; } = AppConfig.GetPath("PathXML");
+        public static string PathXML
+        {
+            get
+            {
+                return AppConfig.GetPath("PathXML");
+            }
+        }
 
         /// <summary>
         /// Путь к накопителю для загрузки в АБС
         /// </summary>
-        public static string PathABS { get; } = AppConfig.GetPath("PathABS");
+        public static string PathABS
+        {
+            get
+            {
+                return AppConfig.GetPath("PathABS");
+            }
+        }
 
         #endregion GetPath
     }
