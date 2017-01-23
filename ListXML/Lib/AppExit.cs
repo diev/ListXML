@@ -33,7 +33,7 @@ namespace Lib
         /// <param name="msg">Текст информации</param>
         public static void Information(string msg = null, int code = 0)
         {
-            Trace.TraceInformation(Message(msg, code));
+            AppTrace.Information(Message(msg, code));
             Exit(code);
         }
 
@@ -44,7 +44,7 @@ namespace Lib
         /// <param name="msg">Текст предупреждения</param>
         public static void Warning(string msg = null, int code = 1)
         {
-            Trace.TraceWarning(Message(msg, code));
+            AppTrace.Warning(Message(msg, code));
             Exit(code);
         }
 
@@ -55,7 +55,7 @@ namespace Lib
         /// <param name="msg">Текст ошибки</param>
         public static void Error(string msg = null, int code = 2)
         {
-            Trace.TraceError(Message(msg, code));
+            AppTrace.Error(Message(msg, code));
             Exit(code);
         }
 

@@ -101,7 +101,7 @@ namespace ListXML
                     else
                     {
                         //throw new FileNotFoundException("Файл, указанный в Config для List1, не найден.", file);
-                        Trace.TraceError("Файл \"{0}\", указанный в Config для List{1}, не найден.", file, 1);
+                        AppTrace.Error("Файл \"{0}\", указанный в Config для List{1}, не найден.", file, 1);
                         list1 = string.Empty;
                     }
                 }
@@ -121,7 +121,7 @@ namespace ListXML
                     else
                     {
                         //throw new FileNotFoundException("Файл, указанный в Config для List2, не найден.", file);
-                        Trace.TraceError("Файл \"{0}\", указанный в Config для List{1}, не найден.", file, 2);
+                        AppTrace.Error("Файл \"{0}\", указанный в Config для List{1}, не найден.", file, 2);
                         list2 = string.Empty;
                     }
                 }
@@ -267,7 +267,7 @@ namespace ListXML
                             #region 40817
                             //Поступление средств на счет физлица
                             string subscribers;
-                            if (Settings.IsSet("40817", out subscribers))
+                            if (AppConfig.IsSet("40817", out subscribers))
                             {
                                 if (acc.StartsWith("40817810") && acc.Substring(9, 5).Equals("00005"))
                                 {
@@ -312,7 +312,7 @@ namespace ListXML
                             break;
 
                         default:
-                            Trace.TraceWarning("Неизвестный тип {0} в {1}", node, file);
+                            AppTrace.Warning("Неизвестный тип {0} в {1}", node, file);
                             break;
                     }
                     #endregion List
@@ -399,7 +399,7 @@ namespace ListXML
             }
             catch (Exception ex)
             {
-                Trace.TraceError(ex.Message);
+                AppTrace.Error(ex.Message);
             }
             if (fs != null)
             {

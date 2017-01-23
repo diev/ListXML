@@ -90,7 +90,7 @@ namespace Lib
             {
                 //Console.WriteLine("Ping failed:");
                 //Console.WriteLine(e.Error.ToString());
-                Trace.TraceWarning("Ping failed: {0}", e.Error.ToString());
+                AppTrace.Warning("Ping failed: {0}", e.Error.ToString());
 
                 // Let the main thread resume. 
                 ((AutoResetEvent)e.UserState).Set();

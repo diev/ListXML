@@ -34,13 +34,13 @@ namespace ListXML
         static EDStorage()
         {
             PathChk = Settings.PathChk;
-            //Trace.TraceInformation("Путь к исходным файлам: \"{0}\"", PathChk);
+            AppTrace.Verbose("Путь к исходным файлам: \"{0}\"", PathChk);
 
             PathXML = Settings.PathXML;
-            //Trace.TraceInformation("Путь к хранилищу обрабатываемых файлов: \"{0}\"", PathXML);
+            AppTrace.Verbose("Путь к хранилищу обрабатываемых файлов: \"{0}\"", PathXML);
 
             PathABS = Settings.PathABS;
-            //Trace.TraceInformation("Путь к накопителю для загрузки в АБС: \"{0}\"", PathABS);
+            AppTrace.Verbose("Путь к накопителю для загрузки в АБС: \"{0}\"", PathABS);
         }
 
         #region Date
@@ -84,12 +84,12 @@ namespace ListXML
             for (int i = 1; i <= 20; i++)
             {
                 Date = date.AddDays(-i);
-                Trace.TraceInformation("Отступ на {0} ({1}).", EDDate, -i);
+                AppTrace.Verbose("Отступ на {0} ({1}).", EDDate, -i);
 
                 string path = Path.Combine(PathXML, "chk", EDDate);
                 if (Directory.Exists(path) && Directory.GetFiles(path).Length > 0)
                 {
-                    Trace.TraceInformation("Работа за день {0}.", EDDate);
+                    AppTrace.Verbose("Работа за день {0}.", EDDate);
                     return;
                 }
             }
@@ -339,7 +339,7 @@ namespace ListXML
                     }
                     else
                     {
-                        Trace.TraceError("{0} не создан", xmlFi.FullName);
+                        AppTrace.Error("{0} не создан", xmlFi.FullName);
                     }
                 }
             }
@@ -386,7 +386,7 @@ namespace ListXML
                 {
                     sp.Append("*");
                 }
-                Trace.TraceInformation(sp.ToString());
+                AppTrace.Information(sp.ToString());
             }
             #endregion Статистика
 
@@ -430,19 +430,19 @@ namespace ListXML
                 string subj = CreditSumFinal ? (sum == 0L ? "Успешное" : "Странное") + " завершение дня " + EDDate
                     : "Предварительно за " + EDDate;
 
-                if (AppTraceListener.ErrorCount > 0)
+                if (AppTrace.ErrorCount > 0)
                 {
                     sb.AppendLine("ОБРАТИТЕ ВНИМАНИЕ: ПРИ ВЫПОЛНЕНИИ ПРОГРАММЫ БЫЛИ ОШИБКИ!!!");
                     subj += "? (см. ОШИБКИ В ЛОГЕ!)";
                 }
-                else if (AppTraceListener.WarningCount > 0)
+                else if (AppTrace.WarningCount > 0)
                 {
                     sb.AppendLine("Обратите внимание: при выполнении программы были предупреждения!");
                     subj += "? (см. лог!)";
                 }
 
                 string msg = sb.ToString();
-                Trace.TraceInformation(msg);
+                AppTrace.Information(msg);
 
                 Mailer.Send(Settings.Email, subj, msg);
             }
@@ -464,7 +464,7 @@ namespace ListXML
                     rcvFi.Delete();
                 }
 
-                Trace.TraceInformation("{0} > {1}", fi.Name, eddate);
+                AppTrace.Information("{0} > {1}", fi.Name, eddate);
                 fi.MoveTo(rcvFi.FullName);
             }
         }
@@ -520,11 +520,11 @@ namespace ListXML
             }
             catch (XmlException ex)
             {
-                Trace.TraceWarning("{0} не XML файл: {1}", fi.FullName, ex.Message);
+                AppTrace.Warning("{0} не XML файл: {1}", fi.FullName, ex.Message);
             }
             catch (Exception ex)
             {
-                Trace.TraceError("{0} ошибка чтения: {1}", fi.FullName, ex.Message);
+                AppTrace.Error("{0} ошибка чтения: {1}", fi.FullName, ex.Message);
             }
 
             return eddate;
@@ -573,11 +573,11 @@ namespace ListXML
 
             catch (XmlException ex)
             {
-                Trace.TraceWarning("{0} не XML файл: {1}", fi.FullName, ex.Message);
+                AppTrace.Warning("{0} не XML файл: {1}", fi.FullName, ex.Message);
             }
             catch (Exception ex)
             {
-                Trace.TraceError("{0} ошибка чтения: {1}", fi.FullName, ex.Message);
+                AppTrace.Error("{0} ошибка чтения: {1}", fi.FullName, ex.Message);
             }
 
             //Обновить состояние!
@@ -602,7 +602,7 @@ namespace ListXML
             }
             catch (XmlException ex)
             {
-                Trace.TraceWarning("{0} не XML файл: {1}", fi.FullName, ex.Message);
+                AppTrace.Warning("{0} не XML файл: {1}", fi.FullName, ex.Message);
                 return;
             }
 
@@ -611,7 +611,7 @@ namespace ListXML
             XmlReader ed = navigator.ReadSubtree();
             ed.Read();
             string edno = ed.GetAttribute("EDNo");
-            Trace.TraceInformation("{0} > {1} #{2}", fi.Name, node, edno);
+            AppTrace.Information("{0} > {1} #{2}", fi.Name, node, edno);
 
             switch (node)
             {
@@ -639,7 +639,7 @@ namespace ListXML
                 case "ED114": //КБР: КЦОИ: Выставляемое на оплату инкассовое поручение
                     if (!NewPayments)
                     {
-                        if (Settings.IsSet(node, out subscribers))
+                        if (AppConfig.IsSet(node, out subscribers))
                         {
                             string msg = string.Format("Получен {0} #{1}", node, edno);
                             Mailer.Send(subscribers, msg);
@@ -725,10 +725,10 @@ namespace ListXML
                                 if (kind.Equals("0")) //окончательная выписка
                                 {
                                     CreditSumFinal = true;
-                                    Trace.TraceInformation("Окончательная выписка получена #{0}", edno);
+                                    AppTrace.Information("Окончательная выписка получена #{0}", edno);
                                 }
 
-                                if (Settings.IsSet(node, out subscribers))
+                                if (AppConfig.IsSet(node, out subscribers))
                                 {
                                     string repName = string.Format("{0}-{1}-{2}", node, EDDate, edno);
                                     string repFile = GetPathInFile(repName, ".txt");
@@ -772,7 +772,7 @@ namespace ListXML
                                     break;
 
                                 case "0401317": //daily costs
-                                    if (Settings.IsSet(reportID, out subscribers))
+                                    if (AppConfig.IsSet(reportID, out subscribers))
                                     {
                                         //Дата, за которую запрашивается информация
                                         string repDate = ed.GetAttribute("ReportDate");
@@ -805,7 +805,7 @@ namespace ListXML
                                     break;
 
                                 case "0401318": //monthly costs
-                                    if (Settings.IsSet(reportID, out subscribers))
+                                    if (AppConfig.IsSet(reportID, out subscribers))
                                     {
                                         //Дата, за которую запрашивается информация
                                         string repDate = ed.GetAttribute("ReportDate").Substring(0, 7);
@@ -839,7 +839,7 @@ namespace ListXML
 
                                 default:
                                     string msg2 = string.Format("{0} содержит неизвестный ReportID {1} в ED219 #{2}.", fi.FullName, node, edno);
-                                    Trace.TraceWarning(msg2);
+                                    AppTrace.Warning(msg2);
                                     defaultMail = false;
                                     Mailer.Send(Settings.Email, "Получен неизвестный ReportID " + node, msg2);
                                     break;
@@ -964,13 +964,13 @@ namespace ListXML
 
                     default:
                         string msg = string.Format("{0} содержит неизвестный документ {1} #{2}.", fi.FullName, node, edno);
-                        Trace.TraceWarning(msg);
+                        AppTrace.Warning(msg);
                         defaultMail = false;
                         Mailer.Send(Settings.Email, string.Format("Получен неизвестный {0} #{1}", node, edno), msg);
                         break;
                 }
 
-                if (Settings.IsSet(node, out subscribers) && defaultMail)
+                if (AppConfig.IsSet(node, out subscribers) && defaultMail)
                 {
                     string msg = string.Format("Получен {0} #{1}", node, edno);
                     Mailer.Send(subscribers, msg);
@@ -1010,7 +1010,7 @@ namespace ListXML
 
             if (!File.Exists(xsltFile))
             {
-                Trace.TraceWarning("No file " + xsltFile + " found for XSLTransform!");
+                AppTrace.Warning("No file " + xsltFile + " found for XSLTransform!");
                 return;
             }
 
@@ -1037,13 +1037,13 @@ namespace ListXML
                 {
                     try
                     {
-                        //Trace.TraceInformation("Экспорт {0}", txtFile);
+                        AppTrace.Verbose("Экспорт {0}", txtFile);
                         File.WriteAllText(txtFile, outText, Encoding.GetEncoding(1251));
                     }
                     catch (Exception ex) //возникает при затирании файла, когда с тем же именем еще не отправлен (исправлено добавлением уникального EDNo)
                     {
                         //Процесс не может получить доступ к файлу "...\ED211-2016-12-29.txt", так как этот файл используется другим процессом.)
-                        Trace.TraceWarning(ex.Message);
+                        AppTrace.Warning(ex.Message);
                     }
                 }
             }

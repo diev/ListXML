@@ -34,7 +34,7 @@ namespace Lib
     {
         static Mailer()
         {
-            //Trace.TraceInformation("Mailer start...");
+            AppTrace.Verbose("Mailer start...");
 
             Signature = "Вы подписаны на получение извещений из АРМ КБР.";
 
@@ -106,7 +106,7 @@ namespace Lib
                         path = Environment.ExpandEnvironmentVariables(path);
                     }
                     IOChecks.CheckDirectory(path);
-                    //Trace.TraceInformation("See emails in \"{0}\".", path);
+                    AppTrace.Verbose("See emails in \"{0}\".", path);
                     break;
 
                 default:
@@ -145,7 +145,7 @@ namespace Lib
 
         private static void Start()
         {
-            Trace.TraceInformation("SMTP start...");
+            AppTrace.Verbose("SMTP start...");
 
             switch (method)
             {
@@ -177,7 +177,7 @@ namespace Lib
                 //QUIT SMTP
                 Client.Dispose();
                 Client = null;
-                Trace.TraceInformation("SMTP stop.");
+                AppTrace.Verbose("SMTP stop.");
             }
         }
 
@@ -185,7 +185,7 @@ namespace Lib
         {
             if (Queue.IsEmpty)
             {
-                //Trace.TraceInformation("Queue is empty.");
+                AppTrace.Verbose("Queue is empty.");
                 return;
             }
 
@@ -196,11 +196,11 @@ namespace Lib
                 Queue.TryDequeue(out drop);
                 if (isSent)
                 {
-                    //Trace.TraceInformation("[{0}] Dequeued sent.", drop.Subject);
+                    AppTrace.Verbose("[{0}] Dequeued sent.", drop.Subject);
                 }
                 else
                 {
-                    Trace.TraceWarning("[{0}] Dequeued unsent.", drop.Subject);
+                    AppTrace.Warning("[{0}] Dequeued unsent.", drop.Subject);
                 }
                 drop.Dispose();
                 return;
@@ -209,7 +209,7 @@ namespace Lib
             while (!Queue.IsEmpty)
             {
                 Queue.TryDequeue(out drop);
-                Trace.TraceWarning("[{0}] Dropped from queue.", drop.Subject);
+                AppTrace.Warning("[{0}] Dropped from queue.", drop.Subject);
                 drop.Dispose();
             }
         }
@@ -222,7 +222,7 @@ namespace Lib
         {
             if (string.IsNullOrWhiteSpace(Admin))
             {
-                Trace.TraceWarning("Admin email is not set!");
+                AppTrace.Warning("Admin email is not set!");
             }
             else
             { 
@@ -286,13 +286,13 @@ namespace Lib
 
                     if (email.Attachments.Count == 0)
                     {
-                        Trace.TraceWarning("Attachments in \"{0}\" not found!", files);
+                        AppTrace.Warning("Attachments in \"{0}\" not found!", files);
                     }
                 }
 
                 Queue.Enqueue(email);
-                //Trace.TraceInformation("[{0}] Queued to send.", email.Subject);
-                Trace.TraceInformation("[{0}] to send", email.Subject);
+                //AppTrace.Information("[{0}] Queued to send.", email.Subject);
+                AppTrace.Verbose("[{0}] to send", email.Subject);
             }
             Delivery();
         }
@@ -314,7 +314,7 @@ namespace Lib
 
                 if (Client == null)
                 {
-                    Trace.TraceError("Ошибка инициализации SMTP.");
+                    AppTrace.Error("Ошибка инициализации SMTP.");
                     return;
                 }
             }
@@ -342,7 +342,7 @@ namespace Lib
 
             try
             {
-                //Trace.TraceInformation("[{0}] Sending...", email.Subject);
+                //AppTrace.Verbose("[{0}] Sending...", email.Subject);
                 Client.SendAsync(email, userState);
             }
             catch (SmtpFailedRecipientsException ex)
@@ -354,14 +354,14 @@ namespace Lib
                         status == SmtpStatusCode.MailboxUnavailable ||
                         status == SmtpStatusCode.TransactionFailed)
                     {
-                        Trace.TraceWarning("Проблема с доступностью - повтор через 5 секунд.");
+                        AppTrace.Warning("Проблема с доступностью - повтор через 5 секунд.");
                         Thread.Sleep(5000);
-                        Trace.TraceInformation("[{0}] Sending again...", email.Subject);
+                        AppTrace.Verbose("[{0}] Sending again...", email.Subject);
                         Client.SendAsync(email, userState);
                     }
                     else
                     {
-                        Trace.TraceError("Отправка на {0} не состоялась: {1}",
+                        AppTrace.Error("Отправка на {0} не состоялась: {1}",
                             ex.InnerExceptions[i].FailedRecipient, ex.InnerExceptions[i].ToString());
                     }
                 }
@@ -369,11 +369,11 @@ namespace Lib
             catch (SmtpException ex)
             {
                 Client.SendAsyncCancel();
-                Trace.TraceError("Отправка прервана по ошибке соединения с сервером: " + ex.ToString());
+                AppTrace.Error("Отправка прервана по ошибке соединения с сервером: " + ex.ToString());
             }
             //finally
             //{
-            //    Trace.TraceInformation("[{0}] Disposing...", email.Subject);
+            //    AppTrace.Verbose("[{0}] Disposing...", email.Subject);
             //    email.Dispose(); // not in Async mode!
             //}
 
@@ -383,12 +383,12 @@ namespace Lib
             //if (statusChecker.Canceled)
             //{
             //    Client.SendAsyncCancel();
-            //    Trace.TraceWarning("Отправка прервана пользователем.");
+            //    AppTrace.Warning("Отправка прервана пользователем.");
             //}
             //else if (statusChecker.TimedOut)
             //{
             //    Client.SendAsyncCancel();
-            //    Trace.TraceWarning("Отправка прервана по таймауту.");
+            //    AppTrace.Warning("Отправка прервана по таймауту.");
             //}
         }
 
@@ -403,12 +403,12 @@ namespace Lib
             {
                 if (DateTime.Now > dt)
                 {
-                    Trace.TraceError("Mail still not delivered.");
+                    AppTrace.Error("Mail still not delivered.");
                     DropQueue();
                     break;
                 }
                 Thread.Sleep(1000);
-                Trace.TraceInformation("Final delivery waiting...");
+                AppTrace.Verbose("Final delivery waiting...");
                 Delivery();
             }
             Stop();
@@ -426,17 +426,17 @@ namespace Lib
 
             if (e.Cancelled)
             {
-                Trace.TraceWarning("[{0}] Send canceled.", token);
+                AppTrace.Warning("[{0}] Send canceled.", token);
                 DropQueue(1);
             }
             else if (e.Error != null)
             {
-                Trace.TraceWarning("[{0}] {1}", token, e.Error.ToString());
+                AppTrace.Warning("[{0}] {1}", token, e.Error.ToString());
                 DropQueue(1);
             }
             else
             {
-                Trace.TraceInformation("[{0}] Message sent.", token);
+                AppTrace.Information("[{0}] Message sent.", token);
                 DropQueue(1, true);
             }
             IsReady = true;
