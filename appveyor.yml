@@ -82,3 +82,4 @@ deploy:
 only_commits:
   files:
     - ListXML\
+    - appveyor.yml
