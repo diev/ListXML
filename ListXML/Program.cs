@@ -64,7 +64,7 @@ namespace ListXML
             #region TestSettings
             if (Options.Test)
             {
-                Settings.Display();
+                AppConfig.Display();
                 Environment.Exit(0); //for AppVeyor
             }
             #endregion TestSettings

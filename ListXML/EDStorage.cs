@@ -430,12 +430,12 @@ namespace ListXML
                 string subj = CreditSumFinal ? (sum == 0L ? "Успешное" : "Странное") + " завершение дня " + EDDate
                     : "Предварительно за " + EDDate;
 
-                if (AppTraceListener.ErrorCount > 0)
+                if (AppTrace.ErrorCount > 0)
                 {
                     sb.AppendLine("ОБРАТИТЕ ВНИМАНИЕ: ПРИ ВЫПОЛНЕНИИ ПРОГРАММЫ БЫЛИ ОШИБКИ!!!");
                     subj += "? (см. ОШИБКИ В ЛОГЕ!)";
                 }
-                else if (AppTraceListener.WarningCount > 0)
+                else if (AppTrace.WarningCount > 0)
                 {
                     sb.AppendLine("Обратите внимание: при выполнении программы были предупреждения!");
                     subj += "? (см. лог!)";
@@ -639,7 +639,7 @@ namespace ListXML
                 case "ED114": //КБР: КЦОИ: Выставляемое на оплату инкассовое поручение
                     if (!NewPayments)
                     {
-                        if (Settings.IsSet(node, out subscribers))
+                        if (AppConfig.IsSet(node, out subscribers))
                         {
                             string msg = string.Format("Получен {0} #{1}", node, edno);
                             Mailer.Send(subscribers, msg);
@@ -728,7 +728,7 @@ namespace ListXML
                                     AppTrace.Information("Окончательная выписка получена #{0}", edno);
                                 }
 
-                                if (Settings.IsSet(node, out subscribers))
+                                if (AppConfig.IsSet(node, out subscribers))
                                 {
                                     string repName = string.Format("{0}-{1}-{2}", node, EDDate, edno);
                                     string repFile = GetPathInFile(repName, ".txt");
@@ -772,7 +772,7 @@ namespace ListXML
                                     break;
 
                                 case "0401317": //daily costs
-                                    if (Settings.IsSet(reportID, out subscribers))
+                                    if (AppConfig.IsSet(reportID, out subscribers))
                                     {
                                         //Дата, за которую запрашивается информация
                                         string repDate = ed.GetAttribute("ReportDate");
@@ -805,7 +805,7 @@ namespace ListXML
                                     break;
 
                                 case "0401318": //monthly costs
-                                    if (Settings.IsSet(reportID, out subscribers))
+                                    if (AppConfig.IsSet(reportID, out subscribers))
                                     {
                                         //Дата, за которую запрашивается информация
                                         string repDate = ed.GetAttribute("ReportDate").Substring(0, 7);
@@ -970,7 +970,7 @@ namespace ListXML
                         break;
                 }
 
-                if (Settings.IsSet(node, out subscribers) && defaultMail)
+                if (AppConfig.IsSet(node, out subscribers) && defaultMail)
                 {
                     string msg = string.Format("Получен {0} #{1}", node, edno);
                     Mailer.Send(subscribers, msg);

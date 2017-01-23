@@ -20,7 +20,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
-using System.Diagnostics;
 using System.Reflection;
 
 namespace ListXML
@@ -30,106 +29,36 @@ namespace ListXML
         static Settings()
         {
             // Default values for app.config
-            baseDictionary = new Dictionary<string, string>()
-            {
-                // Название банка
-                { "Bank", "АО &quot;Сити Инвест Банк&quot;" },
-                // БИК банка
-                { "BIC", "044030702" },
-                // Корсчет банка
-                { "KS", "30101810600000000702" },
-                // Название ТУ Банка России
-                { "RKC", "Северо-Западное ГУ Банка России" },
-                // Файл XSLT форматирования
-                { "XSLT", "UFEBS.xslt" },
 
-                // Путь к исходным файлам из АРМ КБР (UARM.cfg:MachineConfig\Gates\ChkOut1Dir)
-                { "PathChk", @"c:\uarm3\exg\chk\" },
-                // Путь к хранилищу обрабатываемых файлов
-                { "PathXML", @"%TEMP%\{1}\xml\" },
-                // Путь к накопителю для загрузки в АБС
-                { "PathABS", @"%TEMP%\{1}\in\" },
-                // Файл в накопителе АБС для загрузки (0: List, 1:EDDate.Substring(5))
-                { "FileABS", @"LIST{0}\List{0}-{1}.xml" },
+            // Название банка
+            AppConfig.AddDefault("Bank", "АО &quot;Сити Инвест Банк&quot;");
+            // БИК банка
+            AppConfig.AddDefault("BIC", "044030702");
+            // Корсчет банка
+            AppConfig.AddDefault("KS", "30101810600000000702");
+            // Название ТУ Банка России
+            AppConfig.AddDefault("RKC", "Северо-Западное ГУ Банка России");
+            // Файл XSLT форматирования
+            AppConfig.AddDefault("XSLT", "UFEBS.xslt");
 
-                // UIC банка в АРМ КБР
-                { "UICBank", "4030702000" },
-                // UIC ТУ Банка России в АРМ КБР
-                { "UICRKC", "4030001999" },
+            // Путь к исходным файлам из АРМ КБР (UARM.cfg:MachineConfig\Gates\ChkOut1Dir)
+            AppConfig.AddDefault("PathChk", @"c:\uarm3\exg\chk\");
+            // Путь к хранилищу обрабатываемых файлов
+            AppConfig.AddDefault("PathXML", @"%TEMP%\{1}\xml\");
+            // Путь к накопителю для загрузки в АБС
+            AppConfig.AddDefault("PathABS", @"%TEMP%\{1}\in\");
+            // Файл в накопителе АБС для загрузки (0: List, 1:EDDate.Substring(5))
+            AppConfig.AddDefault("FileABS", @"LIST{0}\List{0}-{1}.xml");
 
-                // Файл (имя после @) или построчный перечень счетов для списка 1
-                { "List1", "@list1.txt" },
-                // Файл (имя после @) или построчный перечень конто для списка 2
-                { "List2", "@list2.txt" }
-            };
+            // UIC банка в АРМ КБР
+            AppConfig.AddDefault("UICBank", "4030702000");
+            // UIC ТУ Банка России в АРМ КБР
+            AppConfig.AddDefault("UICRKC", "4030001999");
 
-            // Add and override default values by app.config
-            NameValueCollection appSettings = ConfigurationManager.AppSettings;
-            foreach (string key in appSettings.AllKeys)
-            {
-                string value = appSettings[key];
-                if (string.IsNullOrWhiteSpace(value))
-                {
-                    continue;
-                }
-
-                if (baseDictionary.ContainsKey(key))
-                {
-                    AppTrace.Information("Key \"{0}\" overrided with value \"{1}\".", key, value);
-                    baseDictionary[key] = value;
-                }
-                else
-                {
-                    baseDictionary.Add(key, value);
-                }
-            }
-        }
-
-        static Dictionary<string, string> baseDictionary;
-
-        public static void Display()
-        {
-            Console.WriteLine();
-            foreach (KeyValuePair<string, string> p in baseDictionary)
-            {
-                Console.WriteLine("\t{0}\t = {1}", p.Key, p.Value);
-            }
-            Console.WriteLine();
-        }
-
-        public static void Add(string key, string value)
-        {
-            baseDictionary.Add(key, value);
-        }
-
-        public static string Get(string key)
-        {
-            return baseDictionary[key];
-        }
-
-        public static void Set(string key, string value)
-        {
-            baseDictionary[key] = value;
-        }
-
-        public static string GetPath(string key)
-        {
-            string value = baseDictionary[key];
-            //if (value.Contains("{"))
-            //{
-            //    value = string.Format(value, DateTime.Now, Assembly.GetCallingAssembly().GetName().Name);
-            //}
-            //if (value.Contains("%"))
-            //{
-            //    value = Environment.ExpandEnvironmentVariables(value);
-            //}
-            //return value;
-            return value.ExpandPath();
-        }
-
-        public static bool IsSet(string key, out string value)
-        {
-            return baseDictionary.TryGetValue(key, out value);
+            // Файл (имя после @) или построчный перечень счетов для списка 1
+            AppConfig.AddDefault("List1", "@list1.txt");
+            // Файл (имя после @) или построчный перечень конто для списка 2
+            AppConfig.AddDefault("List2", "@list2.txt");
         }
 
         #region Get
@@ -139,77 +68,77 @@ namespace ListXML
         /// <summary>
         /// Подписчики для сообщений администратору
         /// </summary>
-        public static string Email { get { return baseDictionary["Email"]; } }
+        public static string Email { get; } = AppConfig.Get("Email");
 
         /// <summary>
         /// Название банка
         /// </summary>
-        public static string Bank { get { return baseDictionary["Bank"]; } }
+        public static string Bank { get; } = AppConfig.Get("Bank");
 
         /// <summary>
         /// БИК банка
         /// </summary>
-        public static string BIC { get { return baseDictionary["BIC"]; } }
+        public static string BIC { get; } = AppConfig.Get("BIC");
 
         /// <summary>
         /// Корсчет банка
         /// </summary>
-        public static string KS { get { return baseDictionary["KS"]; } }
+        public static string KS { get; } = AppConfig.Get("KS");
 
         /// <summary>
         /// Название ТУ Банка России
         /// </summary>
-        public static string RKC { get { return baseDictionary["RKC"]; } }
+        public static string RKC { get; } = AppConfig.Get("RKC");
 
         /// <summary>
         /// UIC банка в АРМ КБР
         /// </summary>
-        public static string UICBank { get { return baseDictionary["UICBank"]; } }
+        public static string UICBank { get; } = AppConfig.Get("UICBank");
 
         /// <summary>
         /// UIC ТУ Банка России в АРМ КБР
         /// </summary>
-        public static string UICRKC { get { return baseDictionary["UICRKC"]; } }
+        public static string UICRKC { get; } = AppConfig.Get("UICRKC");
 
         /// <summary>
         /// Файл в накопителе АБС для загрузки (0: List, 1:EDDate.Substring(5))
         /// </summary>
-        public static string FileABS { get { return baseDictionary["FileABS"]; } }
+        public static string FileABS { get; } = AppConfig.Get("FileABS");
 
         #endregion Get
 
         #region GetPath
-        // GetPath() // (0: DateTime, 1: App.Name), можно использовать %переменные_среды%
+        // GetPath() // %Now%, %App%, %переменные_среды%
 
         /// <summary>
         /// Файл (имя после @) или построчный перечень счетов для списка 1
         /// </summary>
-        public static string List1 { get { return GetPath("List1"); } }
+        public static string List1 { get; } = AppConfig.GetPath("List1");
 
         /// <summary>
         /// Файл (имя после @) или построчный перечень конто для списка 2
         /// </summary>
-        public static string List2 { get { return GetPath("List2"); } }
+        public static string List2 { get; } = AppConfig.GetPath("List2");
 
         /// <summary>
         /// Файл XSLT форматирования
         /// </summary>
-        public static string XSLT { get { return GetPath("XSLT"); } }
+        public static string XSLT { get; } = AppConfig.GetPath("XSLT");
 
         /// <summary>
         /// Путь к исходным файлам из АРМ КБР (UARM.cfg:MachineConfig\Gates\ChkOut1Dir)
         /// </summary>
-        public static string PathChk { get { return GetPath("PathChk"); } }
+        public static string PathChk { get; } = AppConfig.GetPath("PathChk");
 
         /// <summary>
         /// Путь к хранилищу обрабатываемых файлов
         /// </summary>
-        public static string PathXML { get { return GetPath("PathXML"); } }
+        public static string PathXML { get; } = AppConfig.GetPath("PathXML");
 
         /// <summary>
         /// Путь к накопителю для загрузки в АБС
         /// </summary>
-        public static string PathABS { get { return GetPath("PathABS"); } }
+        public static string PathABS { get; } = AppConfig.GetPath("PathABS");
 
         #endregion GetPath
     }

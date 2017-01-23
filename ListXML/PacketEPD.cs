@@ -267,7 +267,7 @@ namespace ListXML
                             #region 40817
                             //Поступление средств на счет физлица
                             string subscribers;
-                            if (Settings.IsSet("40817", out subscribers))
+                            if (AppConfig.IsSet("40817", out subscribers))
                             {
                                 if (acc.StartsWith("40817810") && acc.Substring(9, 5).Equals("00005"))
                                 {

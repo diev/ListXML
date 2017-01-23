@@ -57,6 +57,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Lib\AppConfig.cs" />
     <Compile Include="Lib\AppConsoleListener.cs" />
     <Compile Include="Lib\AppLogFileListener.cs" />
     <Compile Include="Lib\AppTrace.cs" />
