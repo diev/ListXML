@@ -35,7 +35,7 @@ install:
       }
     }
 
-    Update-AppveyorBuild -Version ("{0}.{1}" -f $env:VERSION, $env:APPVEYOR_BUILD_NUMBER)
+    Update-AppveyorBuild -Version ("{0} build {1}" -f $env:VERSION, $env:APPVEYOR_BUILD_NUMBER)
 
     $CommitDateTime = [datetime]::Parse($env:APPVEYOR_REPO_COMMIT_TIMESTAMP)
 
