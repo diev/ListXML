@@ -41,7 +41,7 @@ install:
 
     $env:UPDATE = $CommitDateTime.ToString('yyyy-MM-dd')
 
-    $env:PACKAGE = ("{0}-v{1}-b{2}-{3}" -f $env:APPVEYOR_PROJECT_NAME, $env:VERSION, $env:APPVEYOR_BUILD_NUMBER, $env:UPDATE)
+    $env:PACKAGE = ("{0}-v{1}-{2}-b{3}" -f $env:APPVEYOR_PROJECT_NAME, $env:VERSION, $env:UPDATE, $env:APPVEYOR_BUILD_NUMBER)
 
     Write-Host "Building v$env:VERSION build $env:APPVEYOR_BUILD_NUMBER dated $env:UPDATE"
 build:
