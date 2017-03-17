@@ -15,10 +15,7 @@
 //------------------------------------------------------------------------------
 #endregion
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 
 namespace Lib
 {
@@ -28,15 +25,17 @@ namespace Lib
 
         public AppEMailListener(string initializeData)
         {
-            Dictionary<string, string> data = initializeData.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(t => t.Split(new char[] { '=' }, 2))
-                .ToDictionary(t => t[0].Trim(), t => t[1].TrimAnyQuotes(), StringComparer.InvariantCultureIgnoreCase);
+            //Dictionary<string, string> data = initializeData.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+            //    .Select(t => t.Split(new char[] { '=' }, 2))
+            //    .ToDictionary(t => t[0].Trim(), t => t[1].TrimAnyQuotes(), StringComparer.InvariantCultureIgnoreCase);
 
-            _to = data["To"];
+            //_to = data["To"];
+            _to = initializeData;
         }
 
         public override void Write(string message)
         {
+            //string to = Attributes["to"];
             string subj = message.Contains("Information") ? "Information" :
                 message.Contains("Warning") ? "Warning" :
                 message.Contains("Error") ? "Error" : "Verbose";
@@ -45,7 +44,14 @@ namespace Lib
 
         public override void WriteLine(string message)
         {
+            //string to = Attributes["to"];
             Mailer.Send(_to, message);
         }
+
+        //protected override string[] GetSupportedAttributes()
+        //{
+        //    //return base.GetSupportedAttributes();
+        //    return new string[] { "to" };
+        //}
     }
 }

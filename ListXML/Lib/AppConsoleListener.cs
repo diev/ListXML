@@ -16,26 +16,27 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 
 namespace Lib
 {
     public class AppConsoleListener : TraceListener
     {
-        private string _format;
+        //private string _format;
+        private bool stdErr;
 
-        public AppConsoleListener(string initializeData)
+        public AppConsoleListener(bool initializeData)
         {
-            Dictionary<string, string> data = initializeData.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(t => t.Split(new char[] { '=' }, 2))
-                .ToDictionary(t => t[0].Trim(), t => t[1].TrimAnyQuotes(), StringComparer.InvariantCultureIgnoreCase);
+            //    Dictionary<string, string> data = initializeData.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+            //        .Select(t => t.Split(new char[] { '=' }, 2))
+            //        .ToDictionary(t => t[0].Trim(), t => t[1].TrimAnyQuotes(), StringComparer.InvariantCultureIgnoreCase);
 
-            _format = data["Format"].Replace("%Now%", "0");
+            //    _format = data["Format"].Replace("%Now%", "0");
+
+            stdErr = initializeData;
         }
 
-        public override void Write(string message)
+    public override void Write(string message)
         {
             //foreach (DictionaryEntry entry in this.Attributes)
             //{
@@ -45,6 +46,8 @@ namespace Lib
             //        break;
             //    }
             //}
+
+            string format = Attributes["format"].Replace("%Now%", "0");
 
             if (message.Contains("Information"))
             {
@@ -60,7 +63,7 @@ namespace Lib
             }
             //else Verbose
 
-            Console.Write(_format, DateTime.Now);
+            Console.Write(format, DateTime.Now);
         }
 
         public override void WriteLine(string message)
@@ -69,9 +72,9 @@ namespace Lib
             Console.ResetColor();
         }
 
-        //protected override string[] GetSupportedAttributes()
-        //{
-        //    return new string[] { "format" };
-        //}
+        protected override string[] GetSupportedAttributes()
+        {
+            return new string[] { "format" };
+        }
     }
 }
