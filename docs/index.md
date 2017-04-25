@@ -15,7 +15,7 @@
 (достаточно указать номер их ED), опционально вкладывая их содержимое.
 
 Проект ведется в 
-[Microsoft Visual Studio Community 2015](https://www.visualstudio.com/) 
+[Microsoft Visual Studio Community 2017](https://www.visualstudio.com/) 
 (ПО доступно бесплатно, включая коммерческое использование) на языке C#.
 
 Для программы минимально достаточно иметь в системе 
