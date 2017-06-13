@@ -37,7 +37,7 @@ namespace ListXML
             AppConfig.AddDefault("XSLT", "UFEBS.xslt");
 
             // Путь к исходным файлам из АРМ КБР (UARM.cfg:MachineConfig\Gates\ChkOut1Dir)
-            AppConfig.AddDefault("PathChk", @"c:\uarm3\exg\chk\");
+            AppConfig.AddDefault("PathChk", @"C:\uarm3\Exg\chk\");
             // Путь к хранилищу обрабатываемых файлов
             AppConfig.AddDefault("PathXML", @"%TEMP%\{%App%}\xml\");
             // Путь к накопителю для загрузки в АБС

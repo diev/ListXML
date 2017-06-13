@@ -16,10 +16,8 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace Lib
@@ -27,54 +25,53 @@ namespace Lib
     public class AppLogFileListener : TraceListener
     {
         private string _fileName;
-        private string _format;
+        //private string _format;
 
-        private string _verbose;
-        private string _information;
-        private string _warning;
-        private string _error;
+        //private string _verbose;
+        //private string _information;
+        //private string _warning;
+        //private string _error;
 
         public AppLogFileListener(string initializeData)
         {
-            Dictionary<string, string> data = initializeData.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(t => t.Split(new char[] { '=' }, 2))
-                .ToDictionary(t => t[0].Trim(), t => t[1].TrimAnyQuotes(), StringComparer.InvariantCultureIgnoreCase);
+            //Dictionary<string, string> data = initializeData.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+            //    .Select(t => t.Split(new char[] { '=' }, 2))
+            //    .ToDictionary(t => t[0].Trim(), t => t[1].TrimAnyQuotes(), StringComparer.InvariantCultureIgnoreCase);
 
-            string value;
+            //string value;
 
-            if (data.TryGetValue("FileName", out value))
-            {
-                _fileName = value.ExpandPath();
-            }
-            //TODO else
+            //if (data.TryGetValue("FileName", out value))
+            //{
+            //    _fileName = value.ExpandPath();
+            //}
+            ////TODO else
 
-            if (data.TryGetValue("Format", out value))
-            {
-                _format = value.Replace("%Now%", "0").Replace("%Lvl%", "1");
-            }
+            //if (data.TryGetValue("Format", out value))
+            //{
+            //    _format = value.Replace("%Now%", "0").Replace("%Lvl%", "1");
+            //}
 
-            if (data.TryGetValue("Verbose", out value))
-            {
-                _verbose = value;
-            }
+            //if (data.TryGetValue("Verbose", out value))
+            //{
+            //    _verbose = value;
+            //}
 
-            if (data.TryGetValue("Information", out value))
-            {
-                _information = value;
-            }
+            //if (data.TryGetValue("Information", out value))
+            //{
+            //    _information = value;
+            //}
 
-            if (data.TryGetValue("Warning", out value))
-            {
-                _warning = value;
-            }
+            //if (data.TryGetValue("Warning", out value))
+            //{
+            //    _warning = value;
+            //}
 
-            if (data.TryGetValue("Error", out value))
-            {
-                _error = value;
-            }
+            //if (data.TryGetValue("Error", out value))
+            //{
+            //    _error = value;
+            //}
 
-            //base.LogFileName = _fileName;
-
+            _fileName = initializeData.ExpandPath();
             string path = Path.GetDirectoryName(_fileName);
             if (!Directory.Exists(path))
             {
@@ -94,22 +91,23 @@ namespace Lib
             //}
 
             string dt;
+            string format = Attributes["format"].Replace("%Now%", "0").Replace("%Lvl%", "1");
 
             if (message.Contains("Information"))
             {
-                dt = string.Format(_format, DateTime.Now, _information);
+                dt = string.Format(format, DateTime.Now, Attributes["information"]);
             }
             else if (message.Contains("Warning"))
             {
-                dt = string.Format(_format, DateTime.Now, _warning);
+                dt = string.Format(format, DateTime.Now, Attributes["warning"]);
             }
             else if (message.Contains("Error"))
             {
-                dt = string.Format(_format, DateTime.Now, _error);
+                dt = string.Format(format, DateTime.Now, Attributes["error"]);
             }
             else // Verbose
             {
-                dt = string.Format(_format, DateTime.Now, _verbose);
+                dt = string.Format(format, DateTime.Now, Attributes["verbose"]);
             }
 
             File.AppendAllText(_fileName, dt, Encoding.GetEncoding(1251));
@@ -120,9 +118,9 @@ namespace Lib
             File.AppendAllText(_fileName, message + Environment.NewLine, Encoding.GetEncoding(1251));
         }
 
-        //protected override string[] GetSupportedAttributes()
-        //{
-        //    return new string[] { "format" };
-        //}
+        protected override string[] GetSupportedAttributes()
+        {
+            return new string[] { "format", "information", "verbose", "warning", "error" };
+        }
     }
 }

@@ -82,8 +82,8 @@ namespace Lib
                     port = settings.Port;
 
                     // Specify whether the SmtpClient uses Secure Sockets Layer (SSL) to encrypt the connection.
-                    //bool enableSsl = smtpNetworkElement.Port == 587 || //LiveHack due to a Miscrosoft bug prior to .Net 4 (no sense of "enableSsl=" in config)
-                    //            smtpNetworkElement.Port == 465; // Port != 25
+                    //bool enableSsl = port == 587 || //LiveHack due to a Miscrosoft bug prior to .Net 4 (no sense of "enableSsl=" in config)
+                    //                 port == 465; // Port != 25
                     ssl = settings.EnableSsl; //Just if we use .Net 4 now
 
                     user = settings.UserName;
