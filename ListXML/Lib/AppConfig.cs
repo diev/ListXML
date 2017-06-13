@@ -74,7 +74,10 @@ namespace Lib
 
         public static string Get(string key)
         {
-            return baseDictionary[key];
+            //return baseDictionary[key]; // Exception if key does not exist!
+            string value = null;
+            baseDictionary.TryGetValue(key, out value);
+            return value;
         }
 
         public static void Set(string key, string value)
