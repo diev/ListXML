@@ -258,9 +258,10 @@ namespace ListXML
 
                             string acc = bag.Payee.PersonalAcc;
                             //В случае, когда получателем выступает КО, лицевой счет может не указываться - этот случай!
-                            if (string.IsNullOrEmpty(acc))  // no PersonalAcc
+                            if (string.IsNullOrEmpty(acc))  // no PersonalAcc (ED104)
                             {
-                                break; // list = 2
+                                list = 2;
+                                goto list_out;
                             }
 
                             #region 40817
@@ -284,19 +285,22 @@ namespace ListXML
                             }
                             #endregion 40817
 
+                            //Счет в списке 1?
                             if (HashList.TryGetValue(acc, out list))
                             {
-                                break;
+                                goto list_out;
                             }
 
+                            //Начало счета в списке 2?
                             foreach (string conto in LS2)
                             {
                                 if (acc.StartsWith(conto))
                                 {
                                     list = 2;
-                                    break;
+                                    goto list_out;
                                 }
                             }
+                            list_out:
                             #endregion select list
                             break;
 
