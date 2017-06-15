@@ -256,9 +256,19 @@ namespace ListXML
                                 bag.Purpose = ed.ReadElementString();
                             }
 
-                            string acc = bag.Payee.PersonalAcc;
-                            //В случае, когда получателем выступает КО, лицевой счет может не указываться - этот случай!
+                            //Начинаем определение, куда отнести
+
+                            string acc = bag.Payer.PersonalAcc;
+                            //В случае, когда плательщиком выступает КО, лицевой счет не указан - этот случай!
                             if (string.IsNullOrEmpty(acc))  // no PersonalAcc (ED104)
+                            {
+                                list = 2;
+                                goto list_out;
+                            }
+
+                            acc = bag.Payee.PersonalAcc;
+                            //В случае, когда получателем выступает КО, лицевой счет может не указываться - этот случай!
+                            if (string.IsNullOrEmpty(acc))  // no PersonalAcc
                             {
                                 list = 2;
                                 goto list_out;
