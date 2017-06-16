@@ -223,31 +223,40 @@ namespace ListXML
 
                             #region select list
                             //Реквизиты плательщика (далее - "клиента") (поля 8-12, 60, 102)
-
                             if (ed.ReadToDescendant("Payer"))
                             {
                                 //Лицевой счет клиента (поле 9). В случае, когда плательщиком выступает КО, лицевой счет может не указываться
                                 bag.Payer.PersonalAcc = ed.GetAttribute("PersonalAcc");
-                            }
 
-                            if (ed.ReadToDescendant("Name"))
-                            {
-                                //Наименование плательщика (поле 8)
-                                bag.Payer.Name = ed.ReadElementString();
+                                if (ed.ReadToDescendant("Name"))
+                                {
+                                    //Наименование плательщика (поле 8)
+                                    bag.Payer.Name = ed.ReadElementString();
+                                }
+
+                                //TODO: А если Bank вдруг наперед Name?..
+                                if (ed.LocalName.Equals("Bank"))
+                                {
+                                    if (ed.GetAttribute("BIC").Equals(AppConfig.Get("BIC")))
+                                    {
+                                        //Плательщиком является наш Банк (некоторые ED104)
+                                        //сумма на корсчете при этом уменьшается
+                                        bag.Sum = -bag.Sum;
+                                    }
+                                }
                             }
 
                             //Реквизиты получателя (далее - "клиента") (поля 14-17, 61, 103)
-
                             if (ed.ReadToFollowing("Payee"))
                             {
                                 //Лицевой счет клиента (поле 17). В случае, когда получателем выступает КО, лицевой счет может не указываться
                                 bag.Payee.PersonalAcc = ed.GetAttribute("PersonalAcc");
-                            }
 
-                            if (ed.ReadToDescendant("Name"))
-                            {
-                                //Наименование получателя (поле 16)
-                                bag.Payee.Name = ed.ReadElementString();
+                                if (ed.ReadToDescendant("Name"))
+                                {
+                                    //Наименование получателя (поле 16)
+                                    bag.Payee.Name = ed.ReadElementString();
+                                }
                             }
 
                             if (ed.ReadToFollowing("Purpose"))
@@ -255,6 +264,28 @@ namespace ListXML
                                 //Назначение платежа (поле 24)
                                 bag.Purpose = ed.ReadElementString();
                             }
+
+                            #region 40817
+                            //Поступление средств на счет физлица
+                            string subscribers;
+                            if (AppConfig.IsSet("40817", out subscribers))
+                            {
+                                string ac = bag.Payee.PersonalAcc;
+                                if (ac.StartsWith("40817810") && ac.Substring(9, 5).Equals("00005"))
+                                {
+                                    StringBuilder sb = new StringBuilder(512);
+                                    sb.Append("Поступление средств на счет физлица\n\n");
+                                    sb.AppendFormat("Плательщик: {0} ({1})\n\n", bag.Payer.Name, bag.Payer.PersonalAcc);
+                                    sb.AppendFormat("Получатель: {0} ({1})\n\n", bag.Payee.Name, bag.Payee.PersonalAcc);
+                                    sb.AppendFormat("Назначение: {0}\n\n", bag.Purpose);
+                                    sb.AppendFormat("Сумма: {0}\n", BaseConvert.FromKopeek(bag.Sum));
+
+                                    Mailer.Send(subscribers, 
+                                        "Поступление средств", 
+                                        sb.ToString());
+                                }
+                            }
+                            #endregion 40817
 
                             //Начинаем определение, куда отнести
 
@@ -273,27 +304,6 @@ namespace ListXML
                                 list = 2;
                                 goto list_out;
                             }
-
-                            #region 40817
-                            //Поступление средств на счет физлица
-                            string subscribers;
-                            if (AppConfig.IsSet("40817", out subscribers))
-                            {
-                                if (acc.StartsWith("40817810") && acc.Substring(9, 5).Equals("00005"))
-                                {
-                                    StringBuilder sb = new StringBuilder(512);
-                                    sb.Append("Поступление средств на счет физлица\n\n");
-                                    sb.AppendFormat("Плательщик: {0} ({1})\n\n", bag.Payer.Name, bag.Payer.PersonalAcc);
-                                    sb.AppendFormat("Получатель: {0} ({1})\n\n", bag.Payee.Name, bag.Payee.PersonalAcc);
-                                    sb.AppendFormat("Назначение: {0}\n\n", bag.Purpose);
-                                    sb.AppendFormat("Сумма: {0}\n", BaseConvert.FromKopeek(bag.Sum));
-
-                                    Mailer.Send(subscribers, 
-                                        "Поступление средств", 
-                                        sb.ToString());
-                                }
-                            }
-                            #endregion 40817
 
                             //Счет в списке 1?
                             if (HashList.TryGetValue(acc, out list))
