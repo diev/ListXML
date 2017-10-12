@@ -24,7 +24,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("ListXML.Tests")]
 [assembly: AssemblyDescription("Тестирование основного проекта")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Cibank")]
+[assembly: AssemblyCompany("Bank")]
 [assembly: AssemblyProduct("ListXML.Tests")]
 [assembly: AssemblyCopyright("Copyright © Dmitrii Evdokimov 2017")]
 [assembly: AssemblyTrademark("")]
@@ -48,5 +48,5 @@ using System.Runtime.InteropServices;
 // Можно задать все значения или принять номера сборки и редакции по умолчанию 
 // используя "*", как показано ниже:
 // [сборка: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("6.4.2.0")]
-[assembly: AssemblyFileVersion("6.4.2.0")]
+[assembly: AssemblyVersion("6.4.0.0")]
+[assembly: AssemblyFileVersion("6.4.0.0")]
