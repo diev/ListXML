@@ -197,6 +197,15 @@ namespace ListXML
                     {
                         continue;
                     }
+                    else if (node.Equals("Session")) //Тип и номер рейса в котором произошло исполнение распоряжения (или время исполнения) (если распоряжение исполнено в рейсе)
+                    {
+                        continue;
+                    }
+                    else if (!node.StartsWith("ED")) //Не ЭПС
+                    {
+                        AppTrace.Warning("Неизвестный тип {0} в {1}", node, file);
+                        continue;
+                    }
 
                     XmlReader ed = navigator.ReadSubtree();
                     ed.Read();
@@ -326,6 +335,7 @@ namespace ListXML
 
                         case "ED107": //Поручение банка
                         case "ED108": //Платежное поручение на общую сумму с реестром
+                        case "ED109": //Банковский ордер
                         case "ED110": //ЭПС сокращенного формата
                         case "ED111": //Мемориальный ордер в электронном виде
 

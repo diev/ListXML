@@ -582,7 +582,17 @@ namespace ListXML
             //Обновить состояние!
             xmlFi.Refresh();
 
-            return xmlFi.Length > 0;
+            bool ok = false;
+            try
+            {
+                ok = xmlFi.Length > 0;
+            }
+            catch (Exception ex)
+            {
+                //TODO: UnauthorizedAccessException
+                AppTrace.Error("{0} ошибка доступа: {1}", fi.FullName, ex.Message);
+            }
+            return ok;
         }
 
         /// <summary>
@@ -648,10 +658,10 @@ namespace ListXML
                     return; //Платежный файл обрабатываем отдельно
 
                 //Прочие пакеты
-                case "PacketEID": //КБР: КЦОИ: Пакет информационных ЭС
+                case "PacketEID":  //КБР: КЦОИ: Пакет информационных ЭС для информационного обмена между Участниками
                 case "PacketESID": //КБР: КЦОИ: Пакет ЭСИС
                 case "PacketCash": //КБР: КЦОИ: Пакет ЭС для операции с наличными деньгами //2017.1
-                    navigator.MoveToFirstChild(); //Packet -> SigValue || ED || InitialPacketED
+                    navigator.MoveToFirstChild(); //Packet -> SigValue || ED || InitialPacketED || Session
                     break;
 
                 //Прочие отдельные информационные ЭС (разбор ниже)
@@ -686,6 +696,9 @@ namespace ListXML
 
                     case "InitialPacketED": //Идентификаторы исходного ЭС. Заполняются при формировании ответа на ЭС
                         fi.CopyTo(smevFile, true);
+                        break;
+
+                    case "Session": //Тип и номер рейса в котором произошло исполнение распоряжения (или время исполнения) (если распоряжение исполнено в рейсе)
                         break;
 
                     case "ED201": //КБР: КЦОИ: ЦОС: СЭД: АСЭКР: НСПК: Извещение о результатах контроля ЭС (пакета ЭС)
