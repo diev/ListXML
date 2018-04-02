@@ -48,7 +48,7 @@ namespace ListXML
             // UIC банка в АРМ КБР
             AppConfig.AddDefault("UICBank", "4030702000");
             // UIC ТУ Банка России в АРМ КБР
-            AppConfig.AddDefault("UICRKC", "4030001999");
+            AppConfig.AddDefault("UICRKC", "4583001999");
 
             // Файл (имя после @) или построчный перечень счетов для списка 1
             AppConfig.AddDefault("List1", "@list1.txt");

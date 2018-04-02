@@ -26,7 +26,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Bank")]
 [assembly: AssemblyProduct("ListXML.Tests")]
-[assembly: AssemblyCopyright("Copyright © Dmitrii Evdokimov 2017")]
+[assembly: AssemblyCopyright("Copyright © Dmitrii Evdokimov 2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
