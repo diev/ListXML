@@ -23,7 +23,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("ListXML")]
-[assembly: AssemblyDescription("Нарезка входящих из АРМ КБР, УФЭБС v2018.2.2")]
+[assembly: AssemblyDescription("Нарезка входящих из АРМ КБР, УФЭБС v2018.3.2")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Bank")]
 [assembly: AssemblyProduct("ListXML")]
@@ -49,6 +49,6 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("6.4.6.0")]
-[assembly: AssemblyFileVersion("6.4.6.0")]
+[assembly: AssemblyVersion("6.4.7.0")]
+[assembly: AssemblyFileVersion("6.4.7.0")]
 [assembly: NeutralResourcesLanguage("ru-RU")]

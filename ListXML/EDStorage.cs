@@ -1080,23 +1080,31 @@ namespace ListXML
             XslCompiledTransform xslt = new XslCompiledTransform();
             xslt.Load(xsltFile, settings, null);
 
+            string outText = string.Empty;
             using (StringWriter output = new StringWriter())
             {
-                xslt.Transform(nav, arguments, output);
-                string outText = output.ToString();
-
-                if (outText.Length > 0)
+                try
                 {
-                    try
-                    {
-                        AppTrace.Verbose("Экспорт {0}", txtFile);
-                        File.WriteAllText(txtFile, outText, Encoding.GetEncoding(1251));
-                    }
-                    catch (Exception ex) //возникает при затирании файла, когда с тем же именем еще не отправлен (исправлено добавлением уникального EDNo)
-                    {
-                        //Процесс не может получить доступ к файлу "...\ED211-2016-12-29.txt", так как этот файл используется другим процессом.)
-                        AppTrace.Warning(ex.Message);
-                    }
+                    xslt.Transform(nav, arguments, output);
+                    outText = output.ToString();
+                }
+                catch (Exception ex) //возникает при ошибке трансформации
+                {
+                    AppTrace.Warning(ex.Message);
+                }
+            }
+
+            if (outText.Length > 0)
+            {
+                try
+                {
+                    AppTrace.Verbose("Экспорт {0}", txtFile);
+                    File.WriteAllText(txtFile, outText, Encoding.GetEncoding(1251));
+                }
+                catch (Exception ex) //возникает при затирании файла, когда с тем же именем еще не отправлен (исправлено добавлением уникального EDNo)
+                {
+                    //Процесс не может получить доступ к файлу "...\ED211-2016-12-29.txt", так как этот файл используется другим процессом.)
+                    AppTrace.Warning(ex.Message);
                 }
             }
         }
