@@ -74,7 +74,7 @@ namespace Lib
                     {
                         throw new ArgumentNullException(host, "No smtp server Host or IP specified");
                     }
-                    if (!Pinger.Ping(host))
+                    if (!Pinger.TryPing(host, 100))
                     {
                         throw new ArgumentException("Host not pinged", host);
                     }

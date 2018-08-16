@@ -33,8 +33,8 @@ namespace ListXML
             AppConfig.AddDefault("KS", "30101810600000000702");
             // Название ТУ Банка России
             AppConfig.AddDefault("RKC", "Северо-Западное ГУ Банка России");
-            // Файл XSLT форматирования
-            AppConfig.AddDefault("XSLT", "UFEBS.xslt");
+            // Путь к шаблонам XSLT форматирования УФЭБС
+            AppConfig.AddDefault("XSLT", @"MCI_UFEBS\");
 
             // Путь к исходным файлам из АРМ КБР (UARM.cfg:MachineConfig\Gates\ChkOut1Dir)
             AppConfig.AddDefault("PathChk", @"C:\uarm3\Exg\chk\");

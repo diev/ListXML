@@ -181,7 +181,114 @@ namespace ListXML
                     }
                     continue;
                 }
-                else if (!node.StartsWith("ED1"))
+                else if (node.StartsWith("ED1"))
+                {
+                    //Срочный платеж
+                    XmlReader ed = navigator.ReadSubtree();
+                    ed.Read();
+
+                    EPDItems bag = new EPDItems();
+                    //Сумма (поле 7)
+                    bag.Sum = long.Parse(ed.GetAttribute("Sum"));
+
+                    switch (node)
+                    {
+                        //Центральный Банк Российской Федерации.
+                        //Унифицированные форматы электронных банковских сообщений.
+                        //Схемы с описанием прикладных частей электроных сообщений, используемых в расчетной сети Банка России.
+                        //http://www.cbr.ru/analytics/Formats
+
+                        case "ED101": //Платежное поручение
+                        case "ED103": //Платежное требование
+                        case "ED104": //Инкассовое поручение
+                        case "ED105": //Платежный ордер
+
+                            //Реквизиты плательщика (далее - "клиента") (поля 8-12, 60, 102)
+                            if (ed.ReadToDescendant("Payer"))
+                            {
+                                //Лицевой счет клиента (поле 9). В случае, когда плательщиком выступает КО, лицевой счет может не указываться
+                                bag.Payer.PersonalAcc = ed.GetAttribute("PersonalAcc");
+
+                                if (ed.ReadToDescendant("Name"))
+                                {
+                                    //Наименование плательщика (поле 8)
+                                    bag.Payer.Name = ed.ReadElementString();
+                                }
+
+                                //TODO: А если Bank вдруг наперед Name?..
+                                if (ed.LocalName.Equals("Bank"))
+                                {
+                                    if (ed.GetAttribute("BIC").Equals(AppConfig.Get("BIC")))
+                                    {
+                                        //Плательщиком является наш Банк (некоторые ED104)
+                                        //сумма на корсчете при этом уменьшается
+                                        bag.Sum = -bag.Sum;
+                                    }
+                                }
+                            }
+
+                            //Реквизиты получателя (далее - "клиента") (поля 14-17, 61, 103)
+                            if (ed.ReadToFollowing("Payee"))
+                            {
+                                //Лицевой счет клиента (поле 17). В случае, когда получателем выступает КО, лицевой счет может не указываться
+                                bag.Payee.PersonalAcc = ed.GetAttribute("PersonalAcc");
+
+                                if (ed.ReadToDescendant("Name"))
+                                {
+                                    //Наименование получателя (поле 16)
+                                    bag.Payee.Name = ed.ReadElementString();
+                                }
+                            }
+
+                            if (ed.ReadToFollowing("Purpose"))
+                            {
+                                //Назначение платежа (поле 24)
+                                bag.Purpose = ed.ReadElementString();
+                            }
+
+                            #region 40817
+                            //Поступление средств на счет физлица
+                            string subscribers;
+                            if (AppConfig.IsSet("40817", out subscribers))
+                            {
+                                string ac = bag.Payee.PersonalAcc;
+                                if (ac.StartsWith("40817810") && ac.Substring(9, 5).Equals("00005"))
+                                {
+                                    StringBuilder sb = new StringBuilder(512);
+                                    sb.Append("Поступление средств на счет физлица\n\n");
+                                    sb.AppendFormat("Плательщик: {0} ({1})\n\n", bag.Payer.Name, bag.Payer.PersonalAcc);
+                                    sb.AppendFormat("Получатель: {0} ({1})\n\n", bag.Payee.Name, bag.Payee.PersonalAcc);
+                                    sb.AppendFormat("Назначение: {0}\n\n", bag.Purpose);
+                                    sb.AppendFormat("Сумма: {0}\n", BaseConvert.FromKopeek(bag.Sum));
+
+                                    Mailer.Send(subscribers,
+                                        "Поступление средств",
+                                        sb.ToString());
+                                }
+                            }
+                            #endregion 40817
+                            break;
+
+                        case "ED107": //Поручение банка
+                        case "ED108": //Платежное поручение на общую сумму с реестром
+                        case "ED109": //Банковский ордер
+                        case "ED110": //ЭПС сокращенного формата
+                        case "ED111": //Мемориальный ордер в электронном виде
+
+                        case "ED113": //Выставляемое на оплату платежное требование (отдельно, не в PacketEPD)
+                        case "ED114": //Выставляемое на оплату инкассовое поручение (отдельно, не в PacketEPD)
+                            break;
+
+                        default:
+                            AppTrace.Warning("Неизвестный тип {0} в {1}", node, file);
+                            break;
+                    }
+                    EDStorage.FastSum += bag.Sum;
+                    file.CopyTo(EDStorage.GetPathSmevFile(file.Name), true);  //для ГИС ГМП через СМЭВ
+                    file.CopyTo(EDStorage.GetPathABSFile(file.Name), true);   //для АБС банка в общий "поток сознания"
+                    continue;
+                }
+                else
                 {
                     //Не платеж
                     continue;
@@ -415,7 +522,7 @@ namespace ListXML
                     writer.WriteAttributeString("Sum", EDStorage.Pack[list].Sum.ToString());
                     
                     //Признак системы обработки (поле 240)
-                    writer.WriteAttributeString("SystemCode", "01");
+                    writer.WriteAttributeString("SystemCode", "02");
                     writer.WriteRaw(Environment.NewLine);
 
                     writer.WriteRaw(data);

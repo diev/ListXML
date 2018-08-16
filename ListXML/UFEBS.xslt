@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- XSLT для получения TXT из XML
-ListXML 6.1 - Нарезка входящих из АРМ КБР
-Copyright (c) Dmitrii Evdokimov 2009-2016
+ListXML 6.4 - Нарезка входящих из АРМ КБР
+Copyright (c) Dmitrii Evdokimov 2009-2018
 Source https://github.com/diev/ListXML
 
 За основу взят файл из репозитория https://bitbucket.org/html-applications/ufebs-viewer/,
-где использован переработанный файл http://astrasoft.su/Data/AstraKBR/MCI_UFEBS.xslt из AstraKBR.
+где использован переработанный файл http://astrasoft.su/Data/AstraKBR/MCI_UFEBS.ZIP из AstraKBR.
 
 Обновления форматов следует брать с сайта Банка России http://cbr.ru/analytics/formats/
 ("УФЭБС. Обмен с клиентами Банка России").

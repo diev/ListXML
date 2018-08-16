@@ -271,6 +271,11 @@ namespace ListXML
         public static RePacketEPD[] Pack = new RePacketEPD[NumLists]; //0,1,2
 
         /// <summary>
+        /// Сумма срочных документов (вне пакетов)
+        /// </summary>
+        public static long FastSum = 0L;
+
+        /// <summary>
         /// Сумма пополнений на кассовый счет
         /// </summary>
         public static long CashSum = 0L;
@@ -400,6 +405,11 @@ namespace ListXML
                     : CreditSumFinal ? "окончательной"
                     : "промежуточной");
 
+                if (FastSum > 0L)
+                {
+                    sb.AppendFormat("{0,18} - приход в срочных документах\n", BaseConvert.FromKopeek(FastSum));
+                }
+
                 if (CashSum > 0L)
                 {
                     sb.AppendFormat("{0,18} - приход в кассовых документах\n", BaseConvert.FromKopeek(CashSum));
@@ -420,7 +430,7 @@ namespace ListXML
                     sb.AppendFormat("{0,18} - отложено\n", BaseConvert.FromKopeek(ExtraSum));
                 }
 
-                long sum = CreditSum - CashSum - ExtraSum - totalSum;
+                long sum = CreditSum - FastSum - CashSum - ExtraSum - totalSum;
                 if (sum != 0L && CreditSumFinal)
                 {
                     sb.AppendFormat("{0,18} - недостача в пакетах.\n", BaseConvert.FromKopeek(sum));
@@ -631,7 +641,7 @@ namespace ListXML
 
                 //Платежные пакеты и отдельные сообщения
                 case "PacketEPD": //КБР: КЦОИ: Пакет ЭПС
-                                  //а ED101 вне пакета - БЭСП:
+                                  //а ED101 вне пакета - БЭСП
                 case "ED101": //КБР: КЦОИ: Платежное поручение
 
                 case "ED103": //КБР: КЦОИ: Платежное требование
@@ -1058,7 +1068,9 @@ namespace ListXML
 
         private static void XSLT2File(string xmlFile, string txtFile)
         {
-            string xsltFile = Settings.XSLT;
+            //string xsltPath = Settings.XSLT;
+            //string xsltFile = Path.Combine(xsltPath, "MCI_UFEBS.xslt");
+            string xsltFile = "MCI_UFEBS.xslt";
 
             if (!File.Exists(xsltFile))
             {
@@ -1077,8 +1089,12 @@ namespace ListXML
             arguments.AddParam("InfoBIC", string.Empty, Settings.BIC);
             arguments.AddParam("InfoRKC", string.Empty, Settings.RKC);
 
+            //XmlUrlResolver resolver = new XmlUrlResolver(); //TODO: include xslt
+            //resolver.Credentials = System.Net.CredentialCache.DefaultCredentials;
+
             XslCompiledTransform xslt = new XslCompiledTransform();
-            xslt.Load(xsltFile, settings, null);
+            //xslt.Load(xsltFile, settings, resolver);
+            xslt.Load(xsltFile, settings, new XmlUrlResolver());
 
             string outText = string.Empty;
             using (StringWriter output = new StringWriter())

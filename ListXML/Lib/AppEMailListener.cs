@@ -15,6 +15,7 @@
 //------------------------------------------------------------------------------
 #endregion
 
+using System;
 using System.Diagnostics;
 
 namespace Lib
@@ -39,13 +40,28 @@ namespace Lib
             string subj = message.Contains("Information") ? "Information" :
                 message.Contains("Warning") ? "Warning" :
                 message.Contains("Error") ? "Error" : "Verbose";
-            Mailer.Send(_to, subj, message);
+            try
+            {
+                Mailer.Send(_to, subj, message);
+            }
+            catch (Exception ex)
+            {
+                // Не вышло - так не вышло
+            }
+
         }
 
         public override void WriteLine(string message)
         {
             //string to = Attributes["to"];
-            Mailer.Send(_to, message);
+            try
+            {
+                Mailer.Send(_to, message);
+            }
+            catch (Exception ex)
+            {
+                // Не вышло - так не вышло
+            }
         }
 
         //protected override string[] GetSupportedAttributes()

@@ -15,7 +15,6 @@
 //------------------------------------------------------------------------------
 #endregion
 
-using System.Diagnostics;
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading;
@@ -25,6 +24,28 @@ namespace Lib
     class Pinger
     {
         //https://msdn.microsoft.com/ru-ru/library/system.net.networkinformation.ping(v=vs.110).aspx
+
+        /// <summary>
+        /// Попытка пропинговать указанный хост с заданным числом попыток
+        /// </summary>
+        /// <param name="host">Хост для пинга</param>
+        /// <param name="retries">Число попыток [4]</param>
+        /// <param name="delay">Паузы между попытками [500 ms]</param>
+        /// <returns>Успешность пинга указанного хоста</returns>
+        public static bool TryPing(string host, int retries = 4, int delay = 500)
+        {
+            for (int i = 1; i <= retries; i++)
+            {
+                if (Ping(host))
+                {
+                    AppTrace.Verbose("Ping retries: {0}", i);
+                    return true;
+                }
+                Thread.Sleep(delay);
+            }
+            AppTrace.Warning("Ping failed after {0} retries!", retries);
+            return false;
+        }
 
         /// <summary>
         /// Попытка пропинговать указанный хост
