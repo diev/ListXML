@@ -284,8 +284,10 @@ namespace ListXML
                             break;
                     }
                     EDStorage.FastSum += bag.Sum;
-                    file.CopyTo(EDStorage.GetPathSmevFile(file.Name), true);  //для ГИС ГМП через СМЭВ
-                    file.CopyTo(EDStorage.GetPathABSFile(file.Name), true);   //для АБС банка в общий "поток сознания"
+                    string smevFile = EDStorage.GetPathSmevFile(file.Name);  //для ГИС ГМП через СМЭВ
+                    string absFile  = EDStorage.GetPathABSFile(file.Name);   //для АБС банка в общий "поток сознания"
+                    File.Copy(xmlFile, smevFile, true);
+                    File.Copy(xmlFile, absFile, true);
                     continue;
                 }
                 else
