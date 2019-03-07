@@ -271,6 +271,11 @@ namespace ListXML
         public static RePacketEPD[] Pack = new RePacketEPD[NumLists]; //0,1,2
 
         /// <summary>
+        /// Число срочных документов (вне пакетов)
+        /// </summary>
+        public static int FastNum = 0;
+
+        /// <summary>
         /// Сумма срочных документов (вне пакетов)
         /// </summary>
         public static long FastSum = 0L;
@@ -400,19 +405,19 @@ namespace ListXML
                 StringBuilder sb = new StringBuilder(512);
 
                 sb.AppendFormat("За дату {0}{1}\n\n", EDDate, (CreditSumFinal ? string.Empty : " предварительно"));
-                sb.AppendFormat("{0,18} - приход по {1} выписке\n", BaseConvert.FromKopeek(CreditSum),
+                sb.AppendFormat("{0,18} - приход по {1} выписке\n\n", BaseConvert.FromKopeek(CreditSum),
                     Program.Options.Ignore ? "последней(?)"
                     : CreditSumFinal ? "окончательной"
                     : "промежуточной");
 
-                if (FastSum > 0L)
-                {
-                    sb.AppendFormat("{0,18} - приход в срочных документах\n", BaseConvert.FromKopeek(FastSum));
-                }
-
                 if (CashSum > 0L)
                 {
-                    sb.AppendFormat("{0,18} - приход в кассовых документах\n", BaseConvert.FromKopeek(CashSum));
+                    sb.AppendFormat("{0,18} - приход в кэшем на корсчет\n", BaseConvert.FromKopeek(CashSum));
+                }
+
+                if (FastSum > 0L)
+                {
+                    sb.AppendFormat("{0,18} - приход в срочных {1} док.\n", BaseConvert.FromKopeek(FastSum), FastNum);
                 }
 
                 sb.AppendFormat("{0,18} - приход в поступивших {1} док.:\n\n", BaseConvert.FromKopeek(totalSum), totalNum);
@@ -722,7 +727,7 @@ namespace ListXML
                     case "ED206": //КБР: КЦОИ: Подтверждение дебета/кредита
                     case "ED207": //КБР: КЦОИ: Извещение о группе ЭПС
                     case "ED208": //КБР: КЦОИ: Информация о состоянии ЭС
-                    case "ED209": //КБР: КЦОИ: Извещение о режиме обмена/работы счета
+                    //case "ED209": //КБР: КЦОИ: Извещение о режиме обмена/работы счета
                     case "ED210": //КБР: КЦОИ: Запрос выписки из лицевого счета
                         break;
 
@@ -751,26 +756,54 @@ namespace ListXML
                                 {
                                     CreditSumFinal = true;
                                     AppTrace.Information("Окончательная выписка получена #{0}", edno);
+
+                                    if (ed.ReadToDescendant("TransInfo"))
+                                    {
+                                        do
+                                        {
+                                            if (ed.GetAttribute("PayeePersonalAcc").Equals(ks)) //same data in ED222 separately
+                                            {
+                                                creditSum = ed.GetAttribute("Sum");
+                                                if (long.TryParse(creditSum, out crSum))
+                                                {
+                                                    creditSum = BaseConvert.FromKopeek(crSum);
+                                                    if (ed.GetAttribute("DC").Equals("2"))
+                                                    {
+                                                        AppTrace.Verbose("Операция по корсчету на {0}", creditSum);
+                                                        CashSum += crSum;
+                                                    }
+                                                    else
+                                                    {
+                                                        AppTrace.Verbose("Операция по корсчету на -{0}", creditSum);
+                                                        CashSum -= crSum;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        while (ed.ReadToFollowing("TransInfo"));
+                                    }
                                 }
 
                                 if (AppConfig.IsSet(node, out subscribers))
                                 {
-                                    string repName = string.Format("{0}-{1}-{2}", node, EDDate, edno);
-                                    string repFile = GetPathInFile(repName, ".txt");
-                                    XSLT2File(fi.FullName, repFile);
+                                    //string repName = string.Format("{0}-{1}-{2}", node, EDDate, edno);
+                                    //string repFile = GetPathInFile(repName, ".txt");
+                                    //XSLT2File(fi.FullName, repFile);
+                                    //XSLT2File(fi.FullName, node, repFile); //TODO
 
                                     defaultMail = false;
                                     string subj = string.Format("{0} выписка за {1} #{2}", (CreditSumFinal ? "Окончательная" : "Промежуточная"), EDDate, edno);
-                                    if (File.Exists(repFile))
-                                    {
-                                        Mailer.Send(subscribers, subj,
-                                            "Файл " + node + " за " + EDDate + " прилагается.", repFile);
-                                    }
-                                    else
-                                    {
-                                        Mailer.Send(subscribers, subj,
-                                            "Файл приложить не удалось - смотрите лог!");
-                                    }
+                                    //if (File.Exists(repFile))
+                                    //{
+                                    //    Mailer.Send(subscribers, subj,
+                                    //        "Файл " + node + " за " + EDDate + " прилагается.", repFile);
+                                    //}
+                                    //else
+                                    //{
+                                    //    Mailer.Send(subscribers, subj,
+                                    //        "Файл приложить не удалось - смотрите лог!");
+                                    //}
+                                    Mailer.Send(subscribers, subj);
                                 }
                             }
                         }
@@ -873,7 +906,7 @@ namespace ListXML
                         break;
                         #endregion ED219
 
-                    case "ED220": //КБР: КЦОИ: Запрос на получение ответного документооборота
+                    //case "ED220": //КБР: КЦОИ: Запрос на получение ответного документооборота
                     case "ED221": //КБР: КЦОИ: Отчет об операциях по счету для выверки документов дня участников
                         break;
 
@@ -898,9 +931,13 @@ namespace ListXML
                     case "ED230": //НСПК: Реестр клиринговых позиций
                     case "ED231": //НСПК: Реестр результатов обработки клиринговых позиций
 
+                    //2019.2.1
+                    case "ED232": //Реестр клиринговых позиций от ВПС
+                    case "ED233": //Результат обработки реестра клиринговых позиций
+
                     //2017.4.2
-                    case "ED234": //Извещение о задолженности по внутридневному кредиту
-                    case "ED238": //Извещение об операциях по счету
+                    //case "ED234": //Извещение о задолженности по внутридневному кредиту
+                    //case "ED238": //Извещение об операциях по счету
 
                     case "ED240": //КБР: КЦОИ: Запрос информации о переданных/полученных ЭС
                     case "ED241": //КБР: КЦОИ: Информация о переданных/полученных ЭС
@@ -921,32 +958,26 @@ namespace ListXML
                     case "ED284": //КБР: КЦОИ: Разрешение на совершение операций с наличными деньгами Банка России
                     case "ED285": //КБР: КЦОИ: Сообщение о проведенной операции с наличными деньгами Банка России
 
-                    case "ED301": //КЦОИ: Распоряжение для управления ликвидностью
-
-                    case "ED306": //КЦОИ: Подтверждение исполнения распоряжения для управления позицией ликвидности
-
-                    case "ED318": //КБР: КЦОИ: Распоряжение для управления реквизитами получателя
-                    case "ED319": //КБР: КЦОИ: Подтверждение исполнения распоряжения для управления реквизитами получателя
+                    //case "ED301": //КЦОИ: Распоряжение для управления ликвидностью
+                    //case "ED306": //КЦОИ: Подтверждение исполнения распоряжения для управления позицией ликвидности
+                    //case "ED318": //КБР: КЦОИ: Распоряжение для управления реквизитами получателя
+                    //case "ED319": //КБР: КЦОИ: Подтверждение исполнения распоряжения для управления реквизитами получателя
 
                     case "ED330": //КБР: КЦОИ: Информация о корректировке временного регламента функционирования ЦОиР БЭСП, расчетной системы ТУ
                     //case "ED331": //Запрос оперативной информации о состоянии ликвидности ПУР в Банке России
                     //case "ED332": //Оперативная информация о состоянии ликвидности ПУР в Банке России
-                    case "ED333": //КБР: КЦОИ: Извещение о выполнении регламента системы БЭСП
-
-                    case "ED373": //КБР: КЦОИ: Запрос информации об участниках расчетов в системе БЭСП
-                    case "ED374": //КБР: КЦОИ: Информация об участниках системы БЭСП
+                    //case "ED333": //КБР: КЦОИ: Извещение о выполнении регламента системы БЭСП
+                    //case "ED373": //КБР: КЦОИ: Запрос информации об участниках расчетов в системе БЭСП
+                    //case "ED374": //КБР: КЦОИ: Информация об участниках системы БЭСП
                     //case "ED375": //Извещение об отмене установленного лимита ПУР в системе БЭСП
-
                     //case "ED378": //Распоряжение на установку и изменение лимита в системе БЭСП
                     //case "ED379": //Подтверждение распоряжения на установку и изменение лимита в системе БЭСП
                     //case "ED380": //Запрос о лимитах в системе БЭСП
                     //case "ED381": //Информация о лимитах в системе БЭСП
                     //case "ED382": //Распоряжение на изменение приоритета платежа
                     //case "ED383": //Распоряжение на изменение порядка расположения платежа БЭСП
-
                     //case "ED385": //Подтверждение обработки распоряжений на управление очередью платежей БЭСП
-
-                    case "ED393": //Распоряжение для изменения признака основного канала взаимодействия
+                    //case "ED393": //Распоряжение для изменения признака основного канала взаимодействия
 
                     case "ED408": //СЭД: Информация о результатах приема/обработки ЭС
 
@@ -961,8 +992,8 @@ namespace ListXML
 
                     case "ED431": //СЭД: Заявка на участие в депозитном аукционе Банка России / на размещение депозита в Банке России по фиксированной процентной ставке
                     case "ED432": //СЭД: Встречная заявка Банка России на привлечение депозита
-                    case "ED433": //СЭД: Заявка  на востребование депозита до востребования/ на досрочный возврат депозита, размещенного в Банке России на определенный срок
-                    case "ED434": //СЭД: Встречная заявка Банка России на возврат депозита, размещенного до востребования/ на досрочный возврат депозита, размещенного в Банке России на определенный срок
+                    //case "ED433": //СЭД: Заявка  на востребование депозита до востребования/ на досрочный возврат депозита, размещенного в Банке России на определенный срок
+                    //case "ED434": //СЭД: Встречная заявка Банка России на возврат депозита, размещенного до востребования/ на досрочный возврат депозита, размещенного в Банке России на определенный срок
                     case "ED435": //СЭД: Обращение о снятии заявки, направленной на депозитный аукцион/ на размещение депозита в Банке России по фиксированной процентной ставке
 
                     //2017.3.2
@@ -978,6 +1009,12 @@ namespace ListXML
                     case "ED501": //ЦОС: Конверт для ЭС в собственных форматах участников электронного обмена
                         
                     case "ED503": //ЦОС: Конверт для передачи финансовых сообщений
+
+                    //2019.2.1
+                    case "ED504": //Конверт для передачи финансовых сообщений формата TSLC
+                    case "ED505": //Информация о состоянии ЭС, содержащем сообщения формата TSLC
+                    case "ED506": //Конверт для передачи финансовых сообщений формата ISO
+                    case "ED507": //Информация о состоянии ЭС, содержащем сообщения формата ISO
 
                     case "ED508": //ЦОС: Информация о состоянии ЭС
 
@@ -996,6 +1033,22 @@ namespace ListXML
 
                     case "ED599": //ЦОС: Запрос-зонд
 
+                    //2019.2.1
+                    case "ED701": //Поручение для СБП
+                    case "ED705": //Извещение о состоянии ЭПС
+                    case "ED706": //Подтверждение исполнения поручения для СБП
+                    case "ED710": //Запрос информации о состоянии ликвидности в СБП
+                    case "ED711": //Извещение о состоянии ликвидности в СБП
+                    case "ED716": //Сообщение о сверке
+                    case "ED717": //Биллинговая информация
+                    case "ED731": //Запрос об управлении ликвидностью
+                    case "ED732": //Подтверждение исполнения запроса об управлении ликвидностью
+                    case "ED740": //Запрос информации об обработанных поручениях
+                    case "ED741": //Информация об обработанных поручениях
+                    case "ED742": //Запрос потранзакционного реестра
+                    case "ED743": //Потранзакционный реестр
+                    case "ED799": //Запрос-зонд
+
                     //2017.4.2
                     case "ED801": //Запрос информации о ликвидности (полной или краткой)
                     case "ED802": //Информация о ликвидности
@@ -1005,7 +1058,7 @@ namespace ListXML
                     case "ED806": //Запрос изменений в справочнике БИК
                     case "ED807": //Изменения, внесенные в Справочник БИК (Полный Справочник БИК)
                     case "ED808": //Профиль участника
-                    case "ED809": //Уведомление об изменении графика работы
+                    //case "ED809": //Уведомление об изменении графика работы
                     case "ED810": //Распоряжение для управления ликвидностью
                     case "ED811": //Подтверждение исполнения распоряжения для управления ликвидностью
 
@@ -1014,12 +1067,11 @@ namespace ListXML
 
                     case "ED816": //Сообщение о подтверждении первоначального условного распоряжения
 
-                    case "ED818": //Выходная форма Ведомость предоставленных Банком России услуг в платежной системе Банка России, cчет за предоставленные Банком России услуги в платежной системе Банка России
+                    //case "ED818": //Выходная форма Ведомость предоставленных Банком России услуг в платежной системе Банка России, cчет за предоставленные Банком России услуги в платежной системе Банка России
                     case "ED819": //Уведомление Участников
-                    case "ED820": //Уведомление о приеме к исполнению несрочного управляющего ЭС (информационного запроса)
-                    case "ED821": //Уведомление об аннулировании управляющего ЭС
-
-                    case "ED823": //Конверт для передачи ЭС из РАБИС-НП участнику
+                    //case "ED820": //Уведомление о приеме к исполнению несрочного управляющего ЭС (информационного запроса)
+                    //case "ED821": //Уведомление об аннулировании управляющего ЭС
+                    //case "ED823": //Конверт для передачи ЭС из РАБИС-НП участнику
 
                     case "ED999": //КБР: КЦОИ: Запрос-зонд
                         break;
@@ -1068,9 +1120,7 @@ namespace ListXML
 
         private static void XSLT2File(string xmlFile, string txtFile)
         {
-            //string xsltPath = Settings.XSLT;
-            //string xsltFile = Path.Combine(xsltPath, "MCI_UFEBS.xslt");
-            string xsltFile = "MCI_UFEBS.xslt";
+            string xsltFile = Settings.XSLT;
 
             if (!File.Exists(xsltFile))
             {
@@ -1088,6 +1138,66 @@ namespace ListXML
             arguments.AddParam("InfoBANK", string.Empty, Settings.Bank);
             arguments.AddParam("InfoBIC", string.Empty, Settings.BIC);
             arguments.AddParam("InfoRKC", string.Empty, Settings.RKC);
+
+            //XmlUrlResolver resolver = new XmlUrlResolver(); //TODO: include xslt
+            //resolver.Credentials = System.Net.CredentialCache.DefaultCredentials;
+
+            XslCompiledTransform xslt = new XslCompiledTransform();
+            //xslt.Load(xsltFile, settings, resolver);
+            xslt.Load(xsltFile, settings, new XmlUrlResolver());
+
+            string outText = string.Empty;
+            using (StringWriter output = new StringWriter())
+            {
+                try
+                {
+                    xslt.Transform(nav, arguments, output);
+                    outText = output.ToString();
+                }
+                catch (Exception ex) //возникает при ошибке трансформации
+                {
+                    AppTrace.Warning(ex.Message);
+                }
+            }
+
+            if (outText.Length > 0)
+            {
+                try
+                {
+                    AppTrace.Verbose("Экспорт {0}", txtFile);
+                    File.WriteAllText(txtFile, outText, Encoding.GetEncoding(1251));
+                }
+                catch (Exception ex) //возникает при затирании файла, когда с тем же именем еще не отправлен (исправлено добавлением уникального EDNo)
+                {
+                    //Процесс не может получить доступ к файлу "...\ED211-2016-12-29.txt", так как этот файл используется другим процессом.)
+                    AppTrace.Warning(ex.Message);
+                }
+            }
+        }
+
+        private static void XSLT2File(string xmlFile, string ed, string txtFile)
+        {
+            string xsltPath = Settings.PathXSLT;
+            string xsltFile = Path.Combine(xsltPath, ed + ".xslt");
+
+            if (!File.Exists(xsltFile))
+            {
+                AppTrace.Warning("No file " + xsltFile + " found for XSLTransform!");
+                return;
+            }
+
+            XPathDocument xpdoc = new XPathDocument(xmlFile);
+            XPathNavigator nav = xpdoc.CreateNavigator();
+
+            XsltSettings settings = new XsltSettings();
+            settings.EnableScript = true;
+
+            XsltArgumentList arguments = new XsltArgumentList();
+            arguments.AddParam("InfoBANK", string.Empty, Settings.Bank);
+            arguments.AddParam("InfoBIC", string.Empty, Settings.BIC);
+            arguments.AddParam("InfoRKC", string.Empty, Settings.RKC);
+
+            //arguments.AddParam("modif_pos", string.Empty, "0"); //TODO: Common.xslt
 
             //XmlUrlResolver resolver = new XmlUrlResolver(); //TODO: include xslt
             //resolver.Credentials = System.Net.CredentialCache.DefaultCredentials;

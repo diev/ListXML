@@ -33,8 +33,6 @@ namespace ListXML
             AppConfig.AddDefault("KS", "30101810600000000702");
             // Название ТУ Банка России
             AppConfig.AddDefault("RKC", "Северо-Западное ГУ Банка России");
-            // Путь к шаблонам XSLT форматирования УФЭБС
-            AppConfig.AddDefault("XSLT", @"MCI_UFEBS\");
 
             // Путь к исходным файлам из АРМ КБР (UARM.cfg:MachineConfig\Gates\ChkOut1Dir)
             AppConfig.AddDefault("PathChk", @"C:\uarm3\Exg\chk\");
@@ -54,6 +52,11 @@ namespace ListXML
             AppConfig.AddDefault("List1", "@list1.txt");
             // Файл (имя после @) или построчный перечень конто для списка 2
             AppConfig.AddDefault("List2", "@list2.txt");
+
+            //Путь к прилагаемому шаблону XSLT форматирования УФЭБС
+            AppConfig.AddDefault("XSLT", @"UFEBS.xslt");
+            //Путь к внешним шаблонам XSLT форматирования УФЭБС
+            AppConfig.AddDefault("PathXSLT", @"MCI_UFEBS\");
         }
 
         #region Get
@@ -176,17 +179,6 @@ namespace ListXML
         }
 
         /// <summary>
-        /// Файл XSLT форматирования
-        /// </summary>
-        public static string XSLT
-        {
-            get
-            {
-                return AppConfig.GetPath("XSLT");
-            }
-        }
-
-        /// <summary>
         /// Путь к исходным файлам из АРМ КБР (UARM.cfg:MachineConfig\Gates\ChkOut1Dir)
         /// </summary>
         public static string PathChk
@@ -216,6 +208,28 @@ namespace ListXML
             get
             {
                 return AppConfig.GetPath("PathABS");
+            }
+        }
+
+        /// <summary>
+        /// Путь к прилагаемому шаблону XSLT форматирования УФЭБС
+        /// </summary>
+        public static string XSLT
+        {
+            get
+            {
+                return AppConfig.Get("XSLT");
+            }
+        }
+
+        /// <summary>
+        /// Путь к внешним шаблонам XSLT форматирования УФЭБС
+        /// </summary>
+        public static string PathXSLT
+        {
+            get
+            {
+                return AppConfig.GetPath("PathXSLT");
             }
         }
 

@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- XSLT для получения TXT из XML
-ListXML 6.4 - Нарезка входящих из АРМ КБР
-Copyright (c) Dmitrii Evdokimov 2009-2018
+ListXML 6.5 - Нарезка входящих из АРМ КБР
+Copyright (c) Dmitrii Evdokimov 2009-2019
 Source https://github.com/diev/ListXML
 
 За основу взят файл из репозитория https://bitbucket.org/html-applications/ufebs-viewer/,

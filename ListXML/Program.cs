@@ -35,19 +35,21 @@ namespace ListXML
 
         static void Main(string[] args)
         {
+#if !DEBUG
             try
+#endif
             {
-                #region Options
+#region Options
                 Parser.Default.ParseArgumentsStrict(args, Options);
 
-                #region Verbose
+#region Verbose
                 if (Options.Verbose)
                 {
                     AppTrace.TraceSource.Switch.Level = SourceLevels.All;
                 }
-                #endregion Verbose
+#endregion Verbose
 
-                #region Info
+#region Info
                 Console.WriteLine("{0} running...", App.Version);
 
                 StringBuilder sb = new StringBuilder(128);
@@ -61,17 +63,17 @@ namespace ListXML
                     sb.Append(arg);
                 }
                 AppTrace.Information(sb);
-                #endregion Info
+#endregion Info
 
-                #region TestSettings
+#region TestSettings
                 if (Options.Test)
                 {
                     AppConfig.Display();
                     Environment.Exit(0); //for AppVeyor
                 }
-                #endregion TestSettings
+#endregion TestSettings
 
-                #region TestMail
+#region TestMail
                 if (Options.TestMail != null)
                 {
                     string test = Options.GetUsage();
@@ -85,12 +87,12 @@ namespace ListXML
 
                     AppExit.Information("Тест почты завершен.");
                 }
-                #endregion TestMail
+#endregion TestMail
 
                 EDStorage.PreCheck();
                 EDStorage.PreProcessChk();
 
-                #region Date
+#region Date
                 if (Options.Date != null)
                 {
                     DateTime date;
@@ -110,33 +112,35 @@ namespace ListXML
                     AppTrace.Verbose("Время работать предыдущим днем.");
                     EDStorage.SetLastEDDate(DateTime.Now);
                 }
-                #endregion Date
+#endregion Date
 
-                #region Ignore
+#region Ignore
                 if (Options.Ignore)
                 {
                     //Если уж так вышло, что ну нет окончательной выписки
                     EDStorage.CreditSumFinal = true;
                 }
-                #endregion Ignore
-                #endregion Options
+#endregion Ignore
+#endregion Options
 
-                #region Run
+#region Run
                 //Читаем файлы
                 EDStorage.ReadFiles();
-                #endregion Run
+#endregion Run
 
-                #region Finish
+#region Finish
                 //Подождем окончания рассылки
                 Mailer.FinalDelivery(2);
-                #endregion Finish
+#endregion Finish
 
                 //Выход
                 AppExit.Information(); //"Программа завершена.");
+#if !DEBUG
             }
             catch (Exception ex)
             {
                 AppExit.Error(ex.Message);
+#endif
             }
         }
     }

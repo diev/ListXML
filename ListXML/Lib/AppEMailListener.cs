@@ -44,7 +44,7 @@ namespace Lib
             {
                 Mailer.Send(_to, subj, message);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Не вышло - так не вышло
             }
@@ -58,7 +58,7 @@ namespace Lib
             {
                 Mailer.Send(_to, message);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Не вышло - так не вышло
             }

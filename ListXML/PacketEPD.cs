@@ -284,6 +284,7 @@ namespace ListXML
                             break;
                     }
                     EDStorage.FastSum += bag.Sum;
+                    EDStorage.FastNum++;
                     string smevFile = EDStorage.GetPathSmevFile(file.Name) + ".xml"; //для ГИС ГМП через СМЭВ
                     string absFile = EDStorage.GetPathABSFile(file.Name) + ".xml"; //для АБС банка в общий "поток сознания"
                     File.Copy(xmlFile, smevFile, true);
